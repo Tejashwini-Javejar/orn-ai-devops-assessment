@@ -9,7 +9,7 @@ After provisioning the infrastructure, I used Terraform to manage updates and in
 
 In my previous project, I used a modular approach, where Terraform allows us to break down the infrastructure into small, self-contained components. We can create reusable templates instead of rewriting the same code every time. This makes the code easier to maintain, improves reusability and also reduces the time required to provision resources.
 
-I have worked with the below Terraform commands<br>
+I have worked with the fallowing Terraform commands<br>
 
 terraform init - It will initialize the terraform configuration and download the required providers<br>
 terraform plan - It is a kind of dry run , where it shows what infrastructure it is going to create<br>
