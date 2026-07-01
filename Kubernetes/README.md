@@ -12,7 +12,7 @@ I also used Helm to package Kubernetes resources into reusable charts, which sim
 
 As part of troubleshooting, I handled common Kubernetes issues such as:
 
-ImagePullBackOff by validating image names, registry access, and credentials.<br>
+ImagePullBackOff by validating image names, registry access, and credentials<br>
 CrashLoopBackOff by analyzing pod logs using kubectl logs and inspecting events using kubectl describe pod events<br>
 Debugging service and networking issues using Kubernetes events and resource checks<br>
 
