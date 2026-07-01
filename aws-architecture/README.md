@@ -8,3 +8,5 @@
  In the public subnets, I placed the application load balancer and NAT gateway.The application servers were deployed in private subnets so they are not directly exposed to the internet.<br>
  I created route tables for public and private subnets. The public route table connects to the internet gateway, while the private subnet route table sends outbound internet traffic through the NAT Gateway.<br>
  For security, I used security groups Security groups operates at the instance level and control the incoming and the outgoing traffic.<br>
+
+## To ensure high availabilty, the architecture spans across multiple avaiability zones. The applictaion load balancer distributes the traffic across healthy instances in different availability zones, minimizing downtime if one availbilty zone becomes unavailable.
