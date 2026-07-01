@@ -18,4 +18,5 @@ Debugging service and networking issues using Kubernetes events and resource che
 
 I regularly used kubectl commands for monitoring, debugging, and managing workloads.
 
-Overall, I ensured stable deployments, proper service exposure, and smooth application operation in the Kubernetes cluster.
+
+
