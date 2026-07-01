@@ -6,7 +6,7 @@ Yes, I worked on a Kubernetes environment where I deployed and managed container
 
 I created and maintained Deployments, Services, and Ingess using YAML files to ensure applications were scalable and consistently configured across environments.
 
-I exposed applications externally using Ingress, configuring routing rules to direct traffic to the appropriate services based on paths and host-based routing.
+I exposed applications externally using different service types and Ingress, configuring routing rules to direct traffic to the services based on paths and host-based routing.
 
 I also used Helm to package Kubernetes resources into reusable charts, which simplified deployments and allowed environment-specific configurations using values.yaml.
 
