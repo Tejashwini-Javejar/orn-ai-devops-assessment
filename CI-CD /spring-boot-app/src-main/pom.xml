@@ -27,16 +27,10 @@
 
     <dependencies>
 
-        <!-- Spring Boot Web -->
+        <!-- Spring Boot Web (REST API) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-
-        <!-- Thymeleaf (for your index.html) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
         <!-- Test -->
@@ -56,7 +50,7 @@
     </dependencies>
 
     <build>
-        <!-- IMPORTANT: matches Dockerfile jar name -->
+        <!-- matches Dockerfile jar name -->
         <finalName>spring-boot-web</finalName>
 
         <plugins>
