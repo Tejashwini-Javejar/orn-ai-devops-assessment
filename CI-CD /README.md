@@ -4,11 +4,11 @@
 
 In my previous project, I used the following tools to build, test and deploy the application:
 
-GitHub – to store the application source code.
-Jenkins – to trigger and manage the CI/CD pipeline.
-SonarQube– for static code analysis.
-Docker – to containerize the application.
-Argo CD – to deploy the application to the Kubernetes cluster.
+GitHub – to store the application source code.<br>
+Jenkins – to trigger and manage the CI/CD pipeline.<br>
+SonarQube– for static code analysis.<br>
+Docker – to containerize the application.<br>
+Argo CD – to deploy the application to the Kubernetes cluster.<br>
 
 Whenever a developer commits any changes to GitHub, we configured a GitHub webhook to trigger the Jenkins pipeline automatically.As part of the Jenkins pipeline, we used Declarative Pipeline syntax because it is easier to write, maintain and collaborate on.
 
