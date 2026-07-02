@@ -70,6 +70,28 @@ Deploying subnets across multiple Availability Zones<br>
 Running EC2 instances in private subnets in different AZs<br>
 Using ALB to distribute traffic across healthy instances<br>
 
+## Commands used to host Apache application
+
+cd ./Downloads  - Change to the directory containing the SSH key
+ssh -i east.pem ubuntu@ < public ip > - Connect to the Bastion Host (Public EC2 Instance)
+Ping 8.8.8.8 - I have used ping to verify internet connectivity
+then,
+ssh -i east.pem ubuntu @ < private ip> - From the Bastion Host, connect to the private EC2 instance 
+sudo apt update -y - Updated package repository
+sudo apt install apache2 -y - Installed Apache Web Server
+sudo systemctl enable apache2 - Enabled Apache to start automatically
+sudo systemctl start apache2 -  Started the Apache service
+echo "<Server 1 >" | sudo tee /var/www/html/index.html - Created a simple web page
+Repeated the same steps for Server-2.
+
+Since the application servers were deployed in private subnets without public IP addresses, I created a Bastion Host in a public subnet. I first connected to the Bastion Host using SSH and then connected to  the private EC2 instances to install and host Apache.
+
+I have successfully designed and implemented the AWS architecture described above. The application has been deployed on two Apache web servers running in private subnets across multiple Availability Zones, with an Application Load Balancer distributing incoming traffic between them.
+
+The application can be accessed using the Application Load Balancer DNS name:
+
+## Devops-LoadBalancer-1028447724.us-east-1.elb.amazonaws.com
+
 
 
 
