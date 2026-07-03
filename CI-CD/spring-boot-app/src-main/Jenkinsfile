@@ -11,7 +11,7 @@ pipeline {
 
         stage('Build Maven') {
             steps {
-                dir('CI-CD/spring-boot-app') {
+                dir('CI-CD/spring-boot-app/src-main') {
                     sh 'mvn clean package -DskipTests'
                 }
             }
@@ -19,7 +19,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                dir('CI-CD/spring-boot-app') {
+                dir('CI-CD/spring-boot-app/src-main') {
                     sh 'docker build -t cicd-pipeline:v1 .'
                 }
             }
