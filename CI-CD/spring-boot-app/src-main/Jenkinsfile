@@ -28,7 +28,7 @@ pipeline {
         stage('Run Container') {
             steps {
                 sh 'docker rm -f app || true'
-                sh 'docker run -d --name app -p 8080:8080 cicd-pipeline:v1'
+                sh 'docker run -d --name app -p 8081:8080 cicd-pipeline:v1'
             }
         }
     }
