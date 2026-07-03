@@ -9,19 +9,19 @@ pipeline {
             }
         }
 
-        stage('Build Maven') 
-    steps {
-        dir('CI-CD/spring-boot-app') {
-            sh 'mvn clean package -DskipTests'
-        }
-    }
-
+        stage('Build Maven') {
+            steps {
+                dir('CI-CD/spring-boot-app') {
+                    sh 'mvn clean package -DskipTests'
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t cicd-pipeline:v1 .'
+                dir('CI-CD/spring-boot-app') {
+                    sh 'docker build -t cicd-pipeline:v1 .'
+                }
             }
         }
 
