@@ -1,8 +1,8 @@
-FROM eclipse-temurin:17-jdk-alpine
+FROM eclipse-temurin:17-jre-alpine
 
-WORKDIR /opt/app
+WORKDIR /app
 
-COPY target/*.jar app.jar
+COPY target/spring-boot-web.jar app.jar
 
 EXPOSE 8080
 
