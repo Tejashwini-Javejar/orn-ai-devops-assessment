@@ -2,7 +2,7 @@
 
 ## Answer:
 
-Yes, I have worked with GitOps tools such as Argo CD. GitOps is an approach where it uses git as a single source of truth for both application deployments and infrastructure configurations. Any changes made in the Git repository are automatically reflected in the Kubernetes cluster through automation tools like Argo CD.
+Yes, I have worked with GitOps tools such as Argo CD. GitOps is a process where it uses git as a single source of truth for both application deployments and infrastructure configurations. Any changes made in the Git repository are automatically reflected in the Kubernetes cluster through automation tools like Argo CD.
 
 As i have explained in the CI/CD section, I used Argo CD as part of the deployment process in the CI/CD pipeline. We stored Kubernetes manifests in a GitHub repository, and Argo CD continuously monitored this repository.
 
