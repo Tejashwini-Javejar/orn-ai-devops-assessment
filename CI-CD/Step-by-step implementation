@@ -1,0 +1,97 @@
+## CI/CD Pipeline Explanation (Step by Step)
+
+I implemented a CI/CD pipeline for a Spring Boot application using Jenkins and Docker. Let me explain how I built and executed it step by step.
+
+## 1. First, I set up the GitHub repository
+
+I kept my Spring Boot project in GitHub. The repository contains:
+
+Spring Boot source code
+pom.xml for Maven build
+Dockerfile for containerization
+Jenkinsfile for CI/CD pipeline
+
+Jenkins is configured to pull the code automatically from this repository.
+
+## 2. Jenkins automatically fetches the code
+
+When I trigger the pipeline, Jenkins first clones the Git repository:
+
+It pulls the latest code from the main branch
+It loads the Jenkinsfile from the repository
+Then it starts executing the pipeline stages one by one
+
+## 3. Maven build stage
+
+In the next step, I build the Spring Boot application using Maven.
+
+Initially, I had an issue because Jenkins was running Maven in the wrong directory, so it couldn’t find the pom.xml.
+
+Then I fixed it by pointing Jenkins to the correct folder:
+
+CI-CD/spring-boot-app/src-main
+
+After fixing that, I ran:
+
+mvn clean package -DskipTests
+
+This step:
+
+Downloads dependencies
+Compiles the code
+Creates the JAR file inside the target folder
+
+## 4. Docker image build stage
+
+After the build is successful, I create a Docker image using the Dockerfile.
+
+My Dockerfile:
+
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+COPY target/spring-boot-web.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","app.jar"]
+
+Then Jenkins runs:
+
+docker build -t cicd-pipeline:v1 .
+
+This creates a Docker image containing my Spring Boot application.
+
+## 5. Running the Docker container
+
+After building the image, I run the container using Jenkins:
+
+docker run -d --name app -p 8081:8080 cicd-pipeline:v1
+
+Initially, I faced a problem because port 8080 was already in use by another Java process.
+
+So I fixed it by mapping the container to port 8081.
+
+## 6. Application deployment
+
+Once the container starts successfully:
+
+The Spring Boot application runs inside Docker
+It becomes accessible in the browser at:
+http://<EC2-IP>:8081
+
+## 7. Overall CI/CD flow
+
+So the complete pipeline works like this:
+
+Jenkins pulls code from GitHub
+Maven builds the project and generates a JAR
+Docker builds an image using the JAR
+Docker runs the container
+Spring Boot application gets deployed
+
+## Issues I faced and fixed
+
+During the implementation, I faced a few issues:
+
+Docker permission issue → fixed by adding Jenkins user to docker group
+Maven could not find pom.xml → fixed by correcting directory path
+Jenkins Docker agent issue → removed inside() usage
+Port conflict (8080 busy) → changed to 8081
