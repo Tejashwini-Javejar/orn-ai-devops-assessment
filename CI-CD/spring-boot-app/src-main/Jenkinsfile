@@ -8,7 +8,7 @@ pipeline {
 
     environment {
         SONAR_URL = "http://localhost:9000"
-        DOCKER_IMAGE = "your-dockerhub-username/spring-boot-demo:${BUILD_NUMBER}"
+        DOCKER_IMAGE = "teju96/spring-boot-demo:${BUILD_NUMBER}"
     }
 
     stages {
