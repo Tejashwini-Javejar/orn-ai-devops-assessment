@@ -8,6 +8,11 @@ public class HomeController {
 
     @GetMapping("/")
     public String home() {
-        return "Spring Boot CI/CD is working successfully 🚀";
+        return "🚀 Spring Boot CI/CD Pipeline is Working Successfully!";
+    }
+
+    @GetMapping("/health")
+    public String health() {
+        return "OK";
     }
 }
