@@ -2,7 +2,7 @@
 
 ## Answer:
  
- Yes, I have designed a VPC architecture for deploying the application on AWS.<br>
+ Yes, In my previous project I worked on designing a VPC architecture for deploying the application on AWS.<br>
  First, I selected the AWS region and created a VPC by defining a CIDR block.<br>
  Inside the VPC, I created public and private subnets and distributed them across multiple availability zones to ensure high availability.<br>
  In the public subnets, I placed the application load balancer and NAT gateway.The application servers were deployed in private subnets so they are not directly exposed to the internet.<br>
