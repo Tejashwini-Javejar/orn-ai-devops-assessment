@@ -1,0 +1,96 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "flask-app"
+        DOCKER_USER = credentials('dockerhub-user')
+        DOCKER_PASS = credentials('dockerhub-pass')
+        IMAGE_TAG = "v1.${BUILD_NUMBER}"
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies & Test') {
+            steps {
+                sh '''
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install --no-cache-dir -r requirements.txt
+                python -m py_compile app.py
+                '''
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh """
+                docker build -t $IMAGE_NAME:$IMAGE_TAG .
+                """
+            }
+        }
+
+        stage('Security Scan (Basic)') {
+            steps {
+                sh '''
+                echo "Running basic container scan..."
+                docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+                aquasec/trivy image flask-app:${IMAGE_TAG}
+                '''
+            }
+        }
+
+        stage('Login to DockerHub') {
+            steps {
+                sh """
+                echo $DOCKER_PASS_PSW | docker login -u $DOCKER_USER_USR --password-stdin
+                """
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                sh """
+                docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_USER_USR/$IMAGE_NAME:$IMAGE_TAG
+                docker push $DOCKER_USER_USR/$IMAGE_NAME:$IMAGE_TAG
+                """
+            }
+        }
+
+        stage('Update Kubernetes Manifest') {
+            steps {
+                sh '''
+                sed -i "s|image:.*|image: '"$DOCKER_USER_USR/$IMAGE_NAME:$IMAGE_TAG"'|g" k8s/deployment.yaml
+                '''
+            }
+        }
+
+        stage('Commit Updated Manifest') {
+            steps {
+                sh '''
+                git config user.email "jenkins@ci.com"
+                git config user.name "jenkins"
+
+                git add k8s/deployment.yaml
+                git commit -m "Update image tag to $IMAGE_TAG" || true
+                git push origin main
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline SUCCESS 🚀 Image deployed via GitOps (ArgoCD will sync)"
+        }
+
+        failure {
+            echo "Pipeline FAILED ❌ Check logs"
+        }
+    }
+}
