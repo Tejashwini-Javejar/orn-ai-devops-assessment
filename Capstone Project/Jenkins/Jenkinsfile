@@ -2,95 +2,49 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "flask-app"
-        DOCKER_USER = credentials('dockerhub-user')
-        DOCKER_PASS = credentials('dockerhub-pass')
-        IMAGE_TAG = "v1.${BUILD_NUMBER}"
+        DOCKER_IMAGE = "yourdockerhubusername/eks-flask-app"
+        IMAGE_TAG = "${BUILD_NUMBER}"
     }
 
     stages {
 
-        stage('Checkout Code') {
+        stage('Clone Code') {
             steps {
-                checkout scm
+                git branch: 'main',
+                    url: 'https://github.com/your-repo.git'
             }
         }
 
-        stage('Install Dependencies & Test') {
+        stage('Build Docker Image') {
             steps {
-                sh '''
-                python3 -m venv venv
-                . venv/bin/activate
-                pip install --no-cache-dir -r requirements.txt
-                python -m py_compile app.py
-                '''
+                sh "docker build -t $DOCKER_IMAGE:$IMAGE_TAG ."
             }
         }
 
-        stage('Docker Build') {
+        stage('Login to Docker Hub') {
             steps {
-                sh """
-                docker build -t $IMAGE_NAME:$IMAGE_TAG .
-                """
-            }
-        }
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'USERNAME',
+                    passwordVariable: 'PASSWORD')]) {
 
-        stage('Security Scan (Basic)') {
-            steps {
-                sh '''
-                echo "Running basic container scan..."
-                docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-                aquasec/trivy image flask-app:${IMAGE_TAG}
-                '''
-            }
-        }
-
-        stage('Login to DockerHub') {
-            steps {
-                sh """
-                echo $DOCKER_PASS_PSW | docker login -u $DOCKER_USER_USR --password-stdin
-                """
+                    sh "echo $PASSWORD | docker login -u $USERNAME --password-stdin"
+                }
             }
         }
 
         stage('Push Image') {
             steps {
+                sh "docker push $DOCKER_IMAGE:$IMAGE_TAG"
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
                 sh """
-                docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_USER_USR/$IMAGE_NAME:$IMAGE_TAG
-                docker push $DOCKER_USER_USR/$IMAGE_NAME:$IMAGE_TAG
+                kubectl set image deployment/flask-app flask-app=$DOCKER_IMAGE:$IMAGE_TAG -n dev
+                kubectl rollout status deployment/flask-app -n dev
                 """
             }
-        }
-
-        stage('Update Kubernetes Manifest') {
-            steps {
-                sh '''
-                sed -i "s|image:.*|image: '"$DOCKER_USER_USR/$IMAGE_NAME:$IMAGE_TAG"'|g" k8s/deployment.yaml
-                '''
-            }
-        }
-
-        stage('Commit Updated Manifest') {
-            steps {
-                sh '''
-                git config user.email "jenkins@ci.com"
-                git config user.name "jenkins"
-
-                git add k8s/deployment.yaml
-                git commit -m "Update image tag to $IMAGE_TAG" || true
-                git push origin main
-                '''
-            }
-        }
-    }
-
-    post {
-        success {
-            echo "Pipeline SUCCESS 🚀 Image deployed via GitOps (ArgoCD will sync)"
-        }
-
-        failure {
-            echo "Pipeline FAILED ❌ Check logs"
         }
     }
 }
