@@ -1,0 +1,45 @@
+## Steps I fallowed to perform the project
+1. Initialize Terraform
+   terraform init
+
+2. Plan infrastructure
+   terraform plan
+
+3. Apply infrastructure
+   terraform apply
+
+## Connecting to Kubernetes cluster
+After cluster creation:
+   aws eks update-kubeconfig --region us-east-1 --name gitops-eks  
+
+To verify nodes 
+   kubectl get nodes
+
+## Docker Setup
+   I containerized my Flask application using Docker.
+
+   docker build -t flask-app .
+   docker tag flask-app mydockerhub/flask-app:latest
+   docker push mydockerhub/flask-app:latest
+
+## Jenkins CI/CD Pipeline
+   Jenkins automates the entire workflow from code push to deployment.
+    Pull code from GitHub
+    Build Docker image
+    Run tests (if any)
+    Push image to Docker Hub
+    Deploy Kubernetes deployment
+
+## ArgoCD GitOps Setup
+   I used ArgoCD to automatically sync Kubernetes manifests from GitHub.
+
+## Monitoring Setup
+  I used:
+  Prometheus → collects metrics (CPU, memory, pods)
+  Grafana → visual dashboards
+
+## Rollback statergy
+  ArgoCD rollback
+  Open ArgoCD UI
+  Select previous deployment version
+  Click "Rollback"
