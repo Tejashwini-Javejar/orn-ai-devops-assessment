@@ -237,7 +237,7 @@ resource "aws_security_group" "eks" {
 ########################
 # EKS Cluster
 ########################
-resource "aws_eks_cluster" "this" {
+resource "aws_eks_cluster" "cluster" {
   name     = var.cluster_name
   role_arn = aws_iam_role.cluster.arn
 
@@ -262,8 +262,8 @@ resource "aws_eks_cluster" "this" {
 ########################
 # Node Group
 ########################
-resource "aws_eks_node_group" "this" {
-  cluster_name  = aws_eks_cluster.this.name
+resource "aws_eks_node_group" "nodes" {
+  cluster_name  = aws_eks_cluster.cluster.name
   node_role_arn = aws_iam_role.nodes.arn
 
   subnet_ids = [
@@ -281,6 +281,6 @@ resource "aws_eks_node_group" "this" {
 
   depends_on = [
     aws_iam_role_policy_attachment.node_policies,
-    aws_eks_cluster.this
+    aws_eks_cluster.cluster
   ]
 }
