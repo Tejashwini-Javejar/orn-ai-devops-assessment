@@ -188,15 +188,42 @@ resource "aws_iam_role_policy_attachment" "node_policies" {
 ########################
 # Security Group
 ########################
+
+resource "aws_security_group" "nodes" {
+  name   = "eks-node-sg"
+  vpc_id = aws_vpc.myvpc.id
+
+  ingress {
+    from_port = 0
+    to_port   = 65535
+    protocol  = "tcp"
+    self      = true
+  }
+
+  ingress {
+    from_port       = 1025
+    to_port         = 65535
+    protocol        = "tcp"
+    security_groups = [aws_security_group.eks.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_security_group" "eks" {
   name   = "eks-sg"
   vpc_id = aws_vpc.myvpc.id
 
   ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    security_groups = [aws_security_group.nodes.id]
   }
 
   egress {
@@ -223,6 +250,8 @@ resource "aws_eks_cluster" "this" {
     ]
 
     security_group_ids = [aws_security_group.eks.id]
+
+    endpoint_public_access = true
   }
 
   depends_on = [
@@ -252,6 +281,7 @@ resource "aws_eks_node_group" "this" {
   instance_types = ["t3.micro"]
 
   depends_on = [
-    aws_iam_role_policy_attachment.node_policies
+    aws_iam_role_policy_attachment.node_policies,
+    aws_eks_cluster.this
   ]
 }
