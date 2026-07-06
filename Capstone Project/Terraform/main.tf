@@ -2,38 +2,41 @@ resource "aws_vpc" "main" {
 
   cidr_block = "10.0.0.0/16"
 
-  enable_dns_support   = true
-  enable_dns_hostnames = true
-
   tags = {
     Name = "gitops-vpc"
   }
 }
+
 resource "aws_subnet" "public1" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "us-east-1a"
   map_public_ip_on_launch = true
 }
+
 resource "aws_subnet" "public2" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.2.0/24"
   availability_zone       = "us-east-1b"
   map_public_ip_on_launch = true
 }
+
 resource "aws_subnet" "private1" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.3.0/24"
   availability_zone = "us-east-1a"
 }
+
 resource "aws_subnet" "private2" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.4.0/24"
   availability_zone = "us-east-1b"
 }
+
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
 }
+
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
@@ -42,14 +45,17 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.igw.id
   }
 }
+
 resource "aws_route_table_association" "a1" {
   subnet_id      = aws_subnet.public1.id
   route_table_id = aws_route_table.public.id
 }
+
 resource "aws_route_table_association" "a2" {
   subnet_id      = aws_subnet.public2.id
   route_table_id = aws_route_table.public.id
 }
+
 resource "aws_iam_role" "eks_role" {
   name = "eks-role"
 
@@ -64,6 +70,7 @@ resource "aws_iam_role" "eks_role" {
     }]
   })
 }
+
 resource "aws_iam_role_policy_attachment" "eks_policy" {
   role       = aws_iam_role.eks_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
@@ -87,6 +94,7 @@ resource "aws_security_group" "eks_sg" {
   }
 }
 resource "aws_eks_cluster" "cluster" {
+
   name     = var.cluster_name
   role_arn = aws_iam_role.eks_role.arn
 
@@ -96,6 +104,10 @@ resource "aws_eks_cluster" "cluster" {
       aws_subnet.public2.id,
       aws_subnet.private1.id,
       aws_subnet.private2.id
+    ]
+
+    security_group_ids = [
+      aws_security_group.eks_sg.id
     ]
   }
 }
