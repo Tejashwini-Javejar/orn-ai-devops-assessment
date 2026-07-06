@@ -1,7 +1,6 @@
-
-###############################
+########################
 # VPC
-###############################
+########################
 resource "aws_vpc" "myvpc" {
   cidr_block = "10.0.0.0/16"
 
@@ -10,84 +9,59 @@ resource "aws_vpc" "myvpc" {
   }
 }
 
-#############################
-# INTERNET GATEWAY
-#############################
-resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.myvpc.id
-}
 
-#############################
-# PUBLIC SUBNETS
-#############################
-resource "aws_subnet" "public1" {
+########################
+# Public Subnets
+########################
+resource "aws_subnet" "public_a" {
   vpc_id                  = aws_vpc.myvpc.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "us-east-1a"
   map_public_ip_on_launch = true
-
-  tags = {
-    Name = "public-1"
-    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
-    "kubernetes.io/role/elb" = "1"
-  }
 }
 
-resource "aws_subnet" "public2" {
+resource "aws_subnet" "public_b" {
   vpc_id                  = aws_vpc.myvpc.id
   cidr_block              = "10.0.2.0/24"
   availability_zone       = "us-east-1b"
   map_public_ip_on_launch = true
-
-  tags = {
-    Name = "public-2"
-    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
-    "kubernetes.io/role/elb" = "1"
-  }
 }
 
-############################
-# PRIVATE SUBNETS
-############################
-resource "aws_subnet" "private1" {
-  vpc_id            = aws_vpc.myvpc.id
-  cidr_block        = "10.0.3.0/24"
+########################
+# Private Subnets
+########################
+resource "aws_subnet" "private_a" {
+  vpc_id           = aws_vpc.myvpc.id
+  cidr_block       = "10.0.3.0/24"
   availability_zone = "us-east-1a"
-
-  tags = {
-    Name = "private-1"
-    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
-    "kubernetes.io/role/internal-elb" = "1"
-  }
 }
 
-resource "aws_subnet" "private2" {
-  vpc_id            = aws_vpc.myvpc.id
-  cidr_block        = "10.0.4.0/24"
+resource "aws_subnet" "private_b" {
+  vpc_id           = aws_vpc.myvpc.id
+  cidr_block       = "10.0.4.0/24"
   availability_zone = "us-east-1b"
-
-  tags = {
-    Name = "private-2"
-    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
-    "kubernetes.io/role/internal-elb" = "1"
-  }
 }
 
-############################
-# NAT GATEWAY (IMPORTANT)
-############################
-resource "aws_eip" "nat" {
-  domain = "vpc"
+########################
+# Internet Gateway
+########################
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.myvpc.id
 }
+
+########################
+# NAT Gateway
+########################
+resource "aws_eip" "nat" {}
 
 resource "aws_nat_gateway" "nat" {
   allocation_id = aws_eip.nat.id
-  subnet_id     = aws_subnet.public1.id
+  subnet_id     = aws_subnet.public_a.id
 }
 
-############################
-# ROUTE TABLE - PUBLIC
-############################
+########################
+# Public Route Table
+########################
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.myvpc.id
 
@@ -97,19 +71,19 @@ resource "aws_route_table" "public" {
   }
 }
 
-resource "aws_route_table_association" "public1" {
-  subnet_id      = aws_subnet.public1.id
+resource "aws_route_table_association" "public_a" {
+  subnet_id      = aws_subnet.public_a.id
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_route_table_association" "public2" {
-  subnet_id      = aws_subnet.public2.id
+resource "aws_route_table_association" "public_b" {
+  subnet_id      = aws_subnet.public_b.id
   route_table_id = aws_route_table.public.id
 }
 
-############################
-# ROUTE TABLE - PRIVATE
-############################
+########################
+# Private Route Table
+########################
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.myvpc.id
 
@@ -119,27 +93,27 @@ resource "aws_route_table" "private" {
   }
 }
 
-resource "aws_route_table_association" "private1" {
-  subnet_id      = aws_subnet.private1.id
+resource "aws_route_table_association" "private_a" {
+  subnet_id      = aws_subnet.private_a.id
   route_table_id = aws_route_table.private.id
 }
 
-resource "aws_route_table_association" "private2" {
-  subnet_id      = aws_subnet.private2.id
+resource "aws_route_table_association" "private_b" {
+  subnet_id      = aws_subnet.private_b.id
   route_table_id = aws_route_table.private.id
 }
 
-############################
-# IAM ROLE - CLUSTER
-############################
-resource "aws_iam_role" "eks_cluster_role" {
+########################
+# IAM - Cluster Role
+########################
+resource "aws_iam_role" "cluster" {
   name = "eks-cluster-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Action = "sts:AssumeRole",
       Effect = "Allow",
+      Action = "sts:AssumeRole",
       Principal = {
         Service = "eks.amazonaws.com"
       }
@@ -147,22 +121,22 @@ resource "aws_iam_role" "eks_cluster_role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
-  role       = aws_iam_role.eks_cluster_role.name
+resource "aws_iam_role_policy_attachment" "cluster_policy" {
+  role       = aws_iam_role.cluster.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
 
-############################
-# IAM ROLE - WORKER NODES
-############################
-resource "aws_iam_role" "eks_node_role" {
+########################
+# IAM - Node Role
+########################
+resource "aws_iam_role" "nodes" {
   name = "eks-node-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Action = "sts:AssumeRole",
       Effect = "Allow",
+      Action = "sts:AssumeRole",
       Principal = {
         Service = "ec2.amazonaws.com"
       }
@@ -170,25 +144,21 @@ resource "aws_iam_role" "eks_node_role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "node_policy" {
-  role       = aws_iam_role.eks_node_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+resource "aws_iam_role_policy_attachment" "node_policies" {
+  for_each = toset([
+    "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
+    "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
+    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  ])
+
+  role       = aws_iam_role.nodes.name
+  policy_arn = each.value
 }
 
-resource "aws_iam_role_policy_attachment" "cni_policy" {
-  role       = aws_iam_role.eks_node_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-}
-
-resource "aws_iam_role_policy_attachment" "ecr_policy" {
-  role       = aws_iam_role.eks_node_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-}
-
-############################
-# SECURITY GROUP
-############################
-resource "aws_security_group" "eks_sg" {
+########################
+# Security Group
+########################
+resource "aws_security_group" "eks" {
   name   = "eks-sg"
   vpc_id = aws_vpc.myvpc.id
 
@@ -207,38 +177,37 @@ resource "aws_security_group" "eks_sg" {
   }
 }
 
-############################
-# EKS CLUSTER
-############################
-resource "aws_eks_cluster" "cluster" {
+########################
+# EKS Cluster
+########################
+resource "aws_eks_cluster" "this" {
   name     = var.cluster_name
-  role_arn = aws_iam_role.eks_cluster_role.arn
+  role_arn = aws_iam_role.cluster.arn
 
   vpc_config {
     subnet_ids = [
-      aws_subnet.public1.id,
-      aws_subnet.public2.id,
-      aws_subnet.private1.id,
-      aws_subnet.private2.id
+      aws_subnet.public_a.id,
+      aws_subnet.public_b.id,
+      aws_subnet.private_a.id,
+      aws_subnet.private_b.id
     ]
 
-    security_group_ids = [aws_security_group.eks_sg.id]
+    security_group_ids = [aws_security_group.eks.id]
   }
 
-  depends_on = [
-    aws_iam_role_policy_attachment.eks_cluster_policy
-  ]
+  depends_on = [aws_iam_role_policy_attachment.cluster_policy]
 }
 
-############################
-# NODE GROUP
-############################
-resource "aws_eks_node_group" "nodes" {
-  cluster_name    = aws_eks_cluster.cluster.name
-  node_role_arn   = aws_iam_role.eks_node_role.arn
-  subnet_ids      = [
-    aws_subnet.private1.id,
-    aws_subnet.private2.id
+########################
+# Node Group
+########################
+resource "aws_eks_node_group" "this" {
+  cluster_name  = aws_eks_cluster.this.name
+  node_role_arn = aws_iam_role.nodes.arn
+
+  subnet_ids = [
+    aws_subnet.private_a.id,
+    aws_subnet.private_b.id
   ]
 
   scaling_config {
@@ -250,8 +219,6 @@ resource "aws_eks_node_group" "nodes" {
   instance_types = ["t3.micro"]
 
   depends_on = [
-    aws_iam_role_policy_attachment.node_policy,
-    aws_iam_role_policy_attachment.cni_policy,
-    aws_iam_role_policy_attachment.ecr_policy
+    aws_iam_role_policy_attachment.node_policies
   ]
 }
