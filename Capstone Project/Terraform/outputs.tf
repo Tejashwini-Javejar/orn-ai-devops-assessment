@@ -3,7 +3,7 @@ output "cluster_name" {
 }
 
 output "vpc_id" {
-  value = aws_vpc.main.id
+  value = aws_vpc.myvpc.id
 }
 
 output "node_group" {
