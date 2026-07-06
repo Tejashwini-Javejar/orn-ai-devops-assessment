@@ -3,7 +3,7 @@ variable "aws_region" {
 }
 
 variable "cluster_name" {
-  default = "capstone-eks-cluster"
+  default = "capstone-eks"
 }
 
 variable "vpc_name" {
