@@ -186,9 +186,8 @@ resource "aws_iam_role_policy_attachment" "node_policies" {
 }
 
 ########################
-# Security Group
+# Security Group (FIXED - removed circular dependency)
 ########################
-
 resource "aws_security_group" "nodes" {
   name   = "eks-node-sg"
   vpc_id = aws_vpc.myvpc.id
@@ -219,11 +218,12 @@ resource "aws_security_group" "eks" {
   name   = "eks-sg"
   vpc_id = aws_vpc.myvpc.id
 
+  # FIX: removed SG reference causing circular dependency failure
   ingress {
-    from_port       = 443
-    to_port         = 443
-    protocol        = "tcp"
-    security_groups = [aws_security_group.nodes.id]
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
   }
 
   egress {
@@ -243,8 +243,6 @@ resource "aws_eks_cluster" "this" {
 
   vpc_config {
     subnet_ids = [
-      aws_subnet.public_a.id,
-      aws_subnet.public_b.id,
       aws_subnet.private_a.id,
       aws_subnet.private_b.id
     ]
@@ -256,7 +254,8 @@ resource "aws_eks_cluster" "this" {
 
   depends_on = [
     aws_iam_role_policy_attachment.cluster_policy,
-    aws_iam_role_policy_attachment.vpc_controller
+    aws_iam_role_policy_attachment.vpc_controller,
+    aws_nat_gateway.nat
   ]
 }
 
