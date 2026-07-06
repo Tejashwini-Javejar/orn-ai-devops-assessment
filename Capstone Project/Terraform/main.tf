@@ -9,7 +9,6 @@ resource "aws_vpc" "myvpc" {
   }
 }
 
-
 ########################
 # Public Subnets
 ########################
@@ -31,14 +30,14 @@ resource "aws_subnet" "public_b" {
 # Private Subnets
 ########################
 resource "aws_subnet" "private_a" {
-  vpc_id           = aws_vpc.myvpc.id
-  cidr_block       = "10.0.3.0/24"
+  vpc_id            = aws_vpc.myvpc.id
+  cidr_block        = "10.0.3.0/24"
   availability_zone = "us-east-1a"
 }
 
 resource "aws_subnet" "private_b" {
-  vpc_id           = aws_vpc.myvpc.id
-  cidr_block       = "10.0.4.0/24"
+  vpc_id            = aws_vpc.myvpc.id
+  cidr_block        = "10.0.4.0/24"
   availability_zone = "us-east-1b"
 }
 
@@ -126,6 +125,11 @@ resource "aws_iam_role_policy_attachment" "cluster_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
 
+resource "aws_iam_role_policy_attachment" "vpc_controller" {
+  role       = aws_iam_role.cluster.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
+}
+
 ########################
 # IAM - Node Role
 ########################
@@ -195,7 +199,10 @@ resource "aws_eks_cluster" "this" {
     security_group_ids = [aws_security_group.eks.id]
   }
 
-  depends_on = [aws_iam_role_policy_attachment.cluster_policy]
+  depends_on = [
+    aws_iam_role_policy_attachment.cluster_policy,
+    aws_iam_role_policy_attachment.vpc_controller
+  ]
 }
 
 ########################
