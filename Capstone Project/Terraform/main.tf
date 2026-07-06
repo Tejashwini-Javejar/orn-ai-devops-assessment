@@ -17,6 +17,12 @@ resource "aws_subnet" "public_a" {
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "us-east-1a"
   map_public_ip_on_launch = true
+
+  tags = {
+    Name = "public-a"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    "kubernetes.io/role/elb" = "1"
+  }
 }
 
 resource "aws_subnet" "public_b" {
@@ -24,6 +30,12 @@ resource "aws_subnet" "public_b" {
   cidr_block              = "10.0.2.0/24"
   availability_zone       = "us-east-1b"
   map_public_ip_on_launch = true
+
+  tags = {
+    Name = "public-b"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    "kubernetes.io/role/elb" = "1"
+  }
 }
 
 ########################
@@ -33,12 +45,24 @@ resource "aws_subnet" "private_a" {
   vpc_id            = aws_vpc.myvpc.id
   cidr_block        = "10.0.3.0/24"
   availability_zone = "us-east-1a"
+
+  tags = {
+    Name = "private-a"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    "kubernetes.io/role/internal-elb" = "1"
+  }
 }
 
 resource "aws_subnet" "private_b" {
   vpc_id            = aws_vpc.myvpc.id
   cidr_block        = "10.0.4.0/24"
   availability_zone = "us-east-1b"
+
+  tags = {
+    Name = "private-b"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    "kubernetes.io/role/internal-elb" = "1"
+  }
 }
 
 ########################
@@ -51,7 +75,9 @@ resource "aws_internet_gateway" "igw" {
 ########################
 # NAT Gateway
 ########################
-resource "aws_eip" "nat" {}
+resource "aws_eip" "nat" {
+  domain = "vpc"
+}
 
 resource "aws_nat_gateway" "nat" {
   allocation_id = aws_eip.nat.id
