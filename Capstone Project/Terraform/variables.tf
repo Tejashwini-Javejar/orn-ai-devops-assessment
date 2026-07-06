@@ -33,5 +33,5 @@ variable "private_subnets" {
 
 variable "instance_type" {
   type    = string
-  default = "t3.micro"
+  default = "m7i-flex.large"
 }
