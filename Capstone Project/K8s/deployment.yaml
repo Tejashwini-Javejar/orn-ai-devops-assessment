@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: flask-app
-        image: yourdockerhubusername/eks-flask-app:latest
+        image: teju96/capstone-project:v1
         ports:
         - containerPort: 5000
