@@ -2,3 +2,11 @@ Capstone Project/Terraform/.terraform/
 Capstone Project/Terraform/terraform.tfstate
 Capstone Project/Terraform/terraform.tfstate.backup
 
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
+# Terraform lock files (optional keep if you want reproducible builds)
+# .terraform.lock.hcl
