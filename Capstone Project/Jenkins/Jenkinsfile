@@ -16,6 +16,7 @@ pipeline {
 
     stages {
 
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -34,18 +35,15 @@ pipeline {
         }
 
 
-stage('SonarQube Scan') {
-    steps {
-        withSonarQubeEnv('SonarQube') {
-            sh '''
-            sonar-scanner \
-            -Dsonar.projectKey=capstone-project \
-            -Dsonar.sources="Capstone Project/app" \
-            -Dsonar.python.version=3.14
-            '''
-        }
-    }
-}
+        stage('SonarQube Scan') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                    sonar-scanner \
+                    -Dsonar.projectKey=capstone-project \
+                    -Dsonar.sources="Capstone Project/app" \
+                    -Dsonar.python.version=3.14
+                    '''
                 }
             }
         }
@@ -87,6 +85,9 @@ stage('SonarQube Scan') {
             steps {
                 sh '''
                 sed -i "s|image:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" "Capstone Project/K8s/deployment.yaml"
+
+                echo "Updated deployment file:"
+                cat "Capstone Project/K8s/deployment.yaml"
                 '''
             }
         }
@@ -100,13 +101,16 @@ stage('SonarQube Scan') {
             echo "Pipeline completed successfully!"
         }
 
+
         failure {
-            echo "Pipeline failed!"
+            echo "Pipeline failed! Please check logs."
         }
+
 
         always {
             cleanWs()
         }
 
     }
+
 }
