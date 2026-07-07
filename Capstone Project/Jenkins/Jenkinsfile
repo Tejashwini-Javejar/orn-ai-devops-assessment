@@ -16,8 +16,7 @@ pipeline {
 
     stages {
 
-
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
                 checkout scm
             }
@@ -26,11 +25,8 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                dir('app') {
+                dir('Capstone Project/app') {
                     sh '''
-                    python --version
-
-                    pip install --upgrade pip
                     pip install -r requirements.txt
                     '''
                 }
@@ -38,35 +34,26 @@ pipeline {
         }
 
 
-        stage('SonarQube Analysis') {
+        stage('SonarQube Scan') {
             steps {
-
                 withSonarQubeEnv('SonarQube') {
-
                     sh '''
                     sonar-scanner \
                     -Dsonar.projectKey=capstone-project \
-                    -Dsonar.sources=app \
-                    -Dsonar.exclusions=app/**/venv/**
+                    -Dsonar.sources="Capstone Project/app"
                     '''
-
                 }
-
             }
         }
 
 
         stage('Build Docker Image') {
             steps {
-
-                dir('app') {
-
+                dir('Capstone Project/app') {
                     sh '''
                     docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
                     '''
-
                 }
-
             }
         }
 
@@ -76,12 +63,12 @@ pipeline {
 
                 withCredentials([usernamePassword(
                     credentialsId: 'docker-cred',
-                    usernameVariable: 'DOCKER_USERNAME',
-                    passwordVariable: 'DOCKER_PASSWORD'
+                    usernameVariable: 'USERNAME',
+                    passwordVariable: 'PASSWORD'
                 )]) {
 
                     sh '''
-                    echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                    echo $PASSWORD | docker login -u $USERNAME --password-stdin
 
                     docker push ${IMAGE_NAME}:${IMAGE_TAG}
 
@@ -94,14 +81,9 @@ pipeline {
 
         stage('Update Deployment') {
             steps {
-
                 sh '''
-                sed -i "s|image:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" deployment.yaml
-
-                echo "Updated deployment.yaml"
-                cat deployment.yaml
+                sed -i "s|image:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" "Capstone Project/deployment.yaml"
                 '''
-
             }
         }
 
@@ -114,16 +96,13 @@ pipeline {
             echo "Pipeline completed successfully!"
         }
 
-
         failure {
-            echo "Pipeline failed. Check logs."
+            echo "Pipeline failed!"
         }
-
 
         always {
             cleanWs()
         }
 
     }
-
 }
