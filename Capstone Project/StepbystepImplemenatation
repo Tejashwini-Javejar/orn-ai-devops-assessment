@@ -1,45 +1,81 @@
-## Steps I fallowed to perform the project
-1. Initialize Terraform
-   terraform init
+## AWS GitOps Platform Capstone – Client-Facing Explanation
 
-2. Plan infrastructure
-   terraform plan
+## Project Overview
 
-3. Apply infrastructure
-   terraform apply
+The objective of this project was to implement an end-to-end DevOps workflow that automates infrastructure provisioning, application containerization, continuous integration and deployment, GitOps-based delivery, and monitoring. Due to issues with Visual Studio Code, I completed the entire project on an AWS EC2 instance, where I installed and configured all the required tools.
 
-## Connecting to Kubernetes cluster
-After cluster creation:
-   aws eks update-kubeconfig --region us-east-1 --name gitops-eks  
+## Implementation Steps
 
-To verify nodes 
-   kubectl get nodes
+### Step 1: Infrastructure Provisioning with Terraform
 
-## Docker Setup
-   I containerized my Flask application using Docker.
+I used Terraform to provision the required AWS infrastructure by writing Infrastructure as Code (IaC). The Terraform configuration included AWS resources such as the VPC, subnets, IAM roles, and security groups. After creating the configuration files, I manually executed the Terraform workflow using the following commands:
 
-   docker build -t flask-app .
-   docker tag flask-app mydockerhub/flask-app:latest
-   docker push mydockerhub/flask-app:latest
+* `terraform init`
+* `terraform plan`
+* `terraform apply`
 
-## Jenkins CI/CD Pipeline
-   Jenkins automates the entire workflow from code push to deployment.
-    Pull code from GitHub
-    Build Docker image
-    Run tests (if any)
-    Push image to Docker Hub
-    Deploy Kubernetes deployment
+These commands initialized Terraform, generated the execution plan, and provisioned the infrastructure successfully.
 
-## ArgoCD GitOps Setup
-   I used ArgoCD to automatically sync Kubernetes manifests from GitHub.
+### Step 2: Environment Setup
 
-## Monitoring Setup
-  I used:
-  Prometheus → collects metrics (CPU, memory, pods)
-  Grafana → visual dashboards
+After provisioning the infrastructure, I installed and configured the required tools on the EC2 instance, including:
 
-## Rollback statergy
-  ArgoCD rollback
-  Open ArgoCD UI
-  Select previous deployment version
-  Click "Rollback"
+* Docker
+* Jenkins
+* Java 17 (required for Jenkins)
+* SonarQube
+* Kubernetes tools (kubectl)
+* ArgoCD
+* Prometheus
+* Grafana
+
+This prepared the environment for building, deploying, and monitoring the application.
+
+### Step 3: Application Containerization
+
+I downloaded a sample Flask application from GitHub and created a `Dockerfile` and `requirements.txt` file to containerize the application.
+
+I then built and tested the Docker image locally using Docker commands. After verifying that the application was working correctly, I logged into Docker Hub, tagged the image, and pushed it to my Docker Hub repository so it could be used during deployment.
+
+### Step 4: Kubernetes Deployment Configuration
+
+To deploy the application, I created the Kubernetes manifest files:
+
+* `deployment.yaml`
+* `service.yaml`
+
+The service was configured as a **LoadBalancer** to expose the application externally. After deployment, I verified that the application was running successfully using Kubernetes commands to check the deployments and services.
+
+### Step 5: CI/CD Pipeline with Jenkins
+
+To automate the build and deployment process, I created a Jenkins pipeline using a `Jenkinsfile`. The pipeline uses Docker as the build agent, providing an isolated and consistent environment for every pipeline execution.
+
+The pipeline is designed to perform the following tasks:
+
+* Source code checkout
+* Application build
+* Testing
+* Code quality analysis using SonarQube
+* Docker image build
+* Push the Docker image to Docker Hub
+
+I also configured the required credentials in Jenkins, including Docker Hub and Git repository credentials, to securely authenticate during the pipeline execution.
+
+### Step 6: GitOps Deployment with ArgoCD
+
+For continuous deployment, I implemented GitOps using ArgoCD. ArgoCD continuously monitors the Git repository and automatically synchronizes any changes to the Kubernetes cluster, ensuring that the deployed application always matches the desired state stored in Git.
+
+### Step 7: Monitoring
+
+To monitor the application and Kubernetes environment, I installed Prometheus and Grafana.
+
+* Prometheus collects application and cluster metrics.
+* Grafana visualizes these metrics through dashboards, allowing monitoring of application health, resource utilization, and overall system performance.
+
+### Step 8: Rollback Strategy
+
+To ensure application reliability, a rollback strategy was considered as part of the deployment process. In the event of a failed deployment, Kubernetes and ArgoCD can be used to roll back the application to the last stable version, minimizing downtime and ensuring service continuity.
+
+## Conclusion
+
+This project demonstrates a complete DevOps workflow, starting from infrastructure provisioning with Terraform, application containerization using Docker, CI/CD automation with Jenkins, GitOps-based deployment using ArgoCD, and monitoring with Prometheus and Grafana. The implementation follows modern DevOps practices by combining Infrastructure as Code, containerization, automation, continuous deployment, and monitoring to deliver applications in a reliable and repeatable manner.
