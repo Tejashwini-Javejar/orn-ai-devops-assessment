@@ -2,7 +2,7 @@ pipeline {
 
     agent {
         docker {
-            image 'python:3.14'
+            image 'jenkins-python-agent:latest'
             args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
@@ -47,10 +47,11 @@ pipeline {
                     sonar-scanner \
                     -Dsonar.projectKey=capstone-project \
                     -Dsonar.sources=app \
-                    -Dsonar.exclusions=app/venv/**
+                    -Dsonar.exclusions=app/**/venv/**
                     '''
 
                 }
+
             }
         }
 
@@ -97,6 +98,7 @@ pipeline {
                 sh '''
                 sed -i "s|image:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" deployment.yaml
 
+                echo "Updated deployment.yaml"
                 cat deployment.yaml
                 '''
 
@@ -112,9 +114,11 @@ pipeline {
             echo "Pipeline completed successfully!"
         }
 
+
         failure {
-            echo "Pipeline failed."
+            echo "Pipeline failed. Check logs."
         }
+
 
         always {
             cleanWs()
