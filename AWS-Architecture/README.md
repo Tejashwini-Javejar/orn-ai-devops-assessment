@@ -9,4 +9,10 @@
  I created route tables for public and private subnets. The public route table connects to the internet gateway, while the private subnet route table sends outbound internet traffic through the NAT Gateway.<br>
  For security, I used security groups Security groups operates at the instance level and control the incoming and the outgoing traffic.<br>
 
+## AWS services used<br>
+Amazon VPC, EC2, Application Load Balancer, NAT Gateway, Internet Gateway, Route Tables, Security Groups.<br>
+
+## Issue handled
+One challenge I handled was a production outage caused by a sudden traffic spike combined with incorrect Load Balancer configuration. we analyzed the issue, corrected the Load Balancer configuration, improved health check settings, and implemented Auto Scaling to automatically add application instances during high traffic periods.
+
 ## To ensure high availabilty, the architecture spans across multiple avaiability zones. The applictaion load balancer distributes the traffic across healthy instances in different availability zones, minimizing downtime if one availbilty zone becomes unavailable.
