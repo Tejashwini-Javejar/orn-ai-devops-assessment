@@ -23,24 +23,22 @@ pipeline {
                 sh '''
                 python3 -m venv venv
                 . venv/bin/activate
-                pip install --upgrade pip
-                pip install -r requirements.txt
+                python -m pip install --upgrade pip
+                python -m pip install -r requirements.txt
                 '''
             }
         }
 
 
-        stage('SonarQube Scan') {
+        stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-
                     sh '''
                     sonar-scanner \
                     -Dsonar.projectKey=capstone-project \
                     -Dsonar.sources=. \
                     -Dsonar.exclusions=venv/**,.git/**
                     '''
-
                 }
             }
         }
@@ -50,8 +48,6 @@ pipeline {
             steps {
                 sh '''
                 docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-
-                docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
                 '''
             }
         }
@@ -59,18 +55,16 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-
                 withCredentials([usernamePassword(
                     credentialsId: 'docker-cred',
-                    usernameVariable: 'USERNAME',
-                    passwordVariable: 'PASSWORD'
+                    usernameVariable: 'DOCKER_USERNAME',
+                    passwordVariable: 'DOCKER_PASSWORD'
                 )]) {
 
                     sh '''
-                    echo $PASSWORD | docker login -u $USERNAME --password-stdin
+                    echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
 
                     docker push ${IMAGE_NAME}:${IMAGE_TAG}
-                    docker push ${IMAGE_NAME}:latest
 
                     docker logout
                     '''
@@ -79,23 +73,14 @@ pipeline {
         }
 
 
-        stage('Update Deployment File') {
+        stage('Update Deployment') {
             steps {
-
                 sh '''
-                if [ -f deployment.yaml ]; then
+                sed -i "s|image:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" deployment.yaml
 
-                    sed -i "s|image:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" deployment.yaml
-
-                    echo "Updated deployment.yaml:"
-                    cat deployment.yaml
-
-                else
-                    echo "deployment.yaml not found"
-                    exit 1
-                fi
+                echo "Updated deployment file:"
+                cat deployment.yaml
                 '''
-
             }
         }
 
@@ -104,20 +89,17 @@ pipeline {
 
     post {
 
+        success {
+            echo "Build and deployment pipeline completed successfully!"
+        }
+
+        failure {
+            echo "Pipeline failed. Please check the logs."
+        }
+
         always {
             cleanWs()
         }
 
-
-        success {
-            echo "Pipeline completed successfully!"
-        }
-
-
-        failure {
-            echo "Pipeline failed."
-        }
-
     }
-
 }
