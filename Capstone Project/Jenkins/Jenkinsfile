@@ -5,7 +5,6 @@ pipeline {
     environment {
         IMAGE_NAME = "teju96/capstone-project"
         IMAGE_TAG = "${BUILD_NUMBER}"
-        SCANNER_HOME = tool 'SonarQubeScanner'
     }
 
     stages {
@@ -35,11 +34,12 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
 
-                    sh """
-                    ${SCANNER_HOME}/bin/sonar-scanner \
+                    sh '''
+                    sonar-scanner \
                     -Dsonar.projectKey=capstone-project \
-                    -Dsonar.sources=.
-                    """
+                    -Dsonar.sources=. \
+                    -Dsonar.exclusions=venv/**,.git/**
+                    '''
 
                 }
             }
@@ -48,11 +48,11 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh """
+                sh '''
                 docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
 
                 docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
-                """
+                '''
             }
         }
 
@@ -66,14 +66,14 @@ pipeline {
                     passwordVariable: 'PASSWORD'
                 )]) {
 
-                    sh """
-                    echo \$PASSWORD | docker login -u \$USERNAME --password-stdin
+                    sh '''
+                    echo $PASSWORD | docker login -u $USERNAME --password-stdin
 
                     docker push ${IMAGE_NAME}:${IMAGE_TAG}
                     docker push ${IMAGE_NAME}:latest
 
                     docker logout
-                    """
+                    '''
                 }
             }
         }
@@ -82,11 +82,19 @@ pipeline {
         stage('Update Deployment File') {
             steps {
 
-                sh """
-                sed -i 's|image:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|' deployment.yaml
+                sh '''
+                if [ -f deployment.yaml ]; then
 
-                cat deployment.yaml
-                """
+                    sed -i "s|image:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" deployment.yaml
+
+                    echo "Updated deployment.yaml:"
+                    cat deployment.yaml
+
+                else
+                    echo "deployment.yaml not found"
+                    exit 1
+                fi
+                '''
 
             }
         }
@@ -95,6 +103,11 @@ pipeline {
 
 
     post {
+
+        always {
+            cleanWs()
+        }
+
 
         success {
             echo "Pipeline completed successfully!"
@@ -105,10 +118,6 @@ pipeline {
             echo "Pipeline failed."
         }
 
-
-        always {
-            cleanWs()
-        }
-
     }
+
 }
