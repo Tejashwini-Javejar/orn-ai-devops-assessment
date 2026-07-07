@@ -82,7 +82,7 @@ pipeline {
         stage('Update Deployment') {
             steps {
                 sh '''
-                sed -i "s|image:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" "Capstone Project/deployment.yaml"
+                sed -i "s|image:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" "Capstone Project/K8s/deployment.yaml"
                 '''
             }
         }
