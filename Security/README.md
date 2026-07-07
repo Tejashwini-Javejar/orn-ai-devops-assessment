@@ -2,13 +2,18 @@
 
 ## Answer:
 
-In my project, we secured AWS credentials, Kubernetes secrets, and CI/CD access using multiple security tools.
+In my previous project, we secured AWS credentials, Kubernetes secrets, and CI/CD access by following security best practices.
 
-For AWS credentials, we used IAM roles instead of hardcoding access keys. For storing sensitive information such as database passwords, API keys, and application secrets, we used AWS Secrets Manager. It allows us to securely stores secrets, supports automatic password rotation, and controls access through IAM policies.
+For AWS credentials, we avoided storing access keys in code. We used IAM roles and policies to provide only the required permissions. For sensitive information like database passwords and API keys, we used AWS Secrets Manager, which provides secure storage, access control, and secret rotation.
 
-For Kubernetes, we used Kubernetes Secrets to store sensitive data such as application credentials and database passwords instead of keeping them in ConfigMaps or kubernetes manifest files. We also enforced RBAC (Role-Based Access Control) so that only authorized users and service accounts could access the secrets. In production, Kubernetes Secrets can also be encrypted at rest in etcd by enabling encryption at the cluster level. Although Secrets are stored as Base64-encoded values in YAML files, Base64 is only an encoding mechanism and not encryption.
+For Kubernetes, we used Kubernetes Secrets to store sensitive information instead of keeping passwords in ConfigMaps or YAML files. We also implemented RBAC to control who can access secrets. In production environments, secrets can also be encrypted at rest in etcd for additional security.
 
-For CI/CD access, we followed the principle of least privilege. Jenkins had a dedicated service account with only the required permissions. Credentials were stored securely in the Jenkins Credentials Store rather than in pipeline code.
+For CI/CD security, we followed the principle of least privilege. Jenkins used dedicated service accounts with limited permissions, and credentials were stored in Jenkins Credentials Manager instead of being written directly in pipeline scripts.
 
-One issue we encountered was that an team initially kept a database password inside a Kubernetes deployment YAML file. During a code review, we identified the issue and replaced the hardcoded password with a Kubernetes Secret.So it has reduced the risk of exposing credentials.
+## Issue handled
+once during a code review, we found that a database password was hardcoded in a Kubernetes deployment YAML file. We removed the hardcoded value and replaced it with a Kubernetes Secret, which reduced the risk of credential exposure.
+
+## Outcome
+These practices helped us protect sensitive information and reduce security risks.
+
 
