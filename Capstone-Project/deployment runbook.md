@@ -1,117 +1,92 @@
 # Deployment Runbook – AWS GitOps Platform Capstone
 
-## Purpose
+This runbook documents the deployment activities completed for the AWS GitOps Platform Capstone project. The implementation included AWS infrastructure provisioning, application containerization, CI/CD pipeline configuration, Kubernetes deployment, GitOps integration using ArgoCD, monitoring setup, and rollback validation.
 
-This runbook describes the steps followed to deploy the AWS GitOps Platform Capstone project. It includes infrastructure provisioning, application containerization, CI/CD configuration, Kubernetes deployment, GitOps implementation, monitoring, and rollback procedures.
+# Prerequisites Completed
 
----
+Before starting the deployment, I prepared the required environment and installed the necessary tools:
 
-# Prerequisites
-
-Before starting the deployment, ensure the following are available:
-
-* AWS Account
-* AWS EC2 instance
-* Terraform installed
-* AWS CLI configured
-* Docker installed
+* AWS Account configured
+* AWS EC2 instance created and used as the deployment environment
+* Terraform installed and configured
+* AWS CLI installed and authenticated
+* Docker installed and configured
 * Java 17 installed
 * Jenkins installed and running
-* kubectl installed and configured
-* Docker Hub account
-* GitHub repository
+* SonarQube installed and configured
+* kubectl installed and connected with Kubernetes cluster
+* Docker Hub account configured
+* GitHub repository created and connected
 * ArgoCD installed
 * Prometheus installed
 * Grafana installed
 
----
+# Deployment Activities Completed
 
-# Deployment Process
+## Step 1 – AWS EC2 Environment Setup
 
-## Step 1 – Launch EC2 Instance
+I used an AWS EC2 instance as the development and deployment environment.
 
-An AWS EC2 instance was used as the development and deployment environment because of issues with the local Visual Studio Code setup.
+I connected to the EC2 instance using SSH:
 
-Connect to the EC2 instance using SSH.
+ssh -i <key.pem> ubuntu@<public-ip>
 
-```bash
-ssh -i <key.pem> ec2-user@<public-ip>
-```
+The EC2 environment was successfully prepared for the deployment activities.
 
----
+## Step 2 – Repository Setup
 
-## Step 2 – Clone the Repository
+I cloned the project repository from GitHub into the EC2 instance.
 
-Clone the GitHub repository to the EC2 instance.
+git clone <repository-url> <br>
+cd <repository-folder> <br>
+The source code and deployment files were successfully downloaded and verified.<br>
 
-```bash
-git clone <repository-url>
-cd <repository-folder>
-```
 
----
+## Step 3 – AWS Infrastructure Provisioning Using Terraform<br>
 
-## Step 3 – Provision AWS Infrastructure
+I navigated to the Terraform configuration directory:<br>
 
-Navigate to the Terraform directory.
+cd terraform<br>
 
-```bash
-cd terraform
-```
+Initialized Terraform:<br>
 
-Initialize Terraform.
+terraform init<br>
 
-```bash
-terraform init
-```
+Validated the Terraform configuration and reviewed the deployment plan:<br>
 
-Review the execution plan.
+terraform plan<br>
 
-```bash
-terraform plan
-```
+Provisioned the AWS infrastructure:<br>
 
-Create the infrastructure.
+terraform apply<br>
 
-```bash
-terraform apply
-```
+Terraform successfully created the required AWS resources:<br>
 
-Confirm the execution when prompted.
-
-Terraform provisions the required AWS resources, including:
-
-* VPC
-* Subnets
+* VPC<br>
+* Private and Public subnets
+* Internet Gateway, Route tables and NAT gateway<br>
 * IAM Roles
 * Security Groups
-* Amazon EKS Cluster (if applicable)
+* Amazon EKS Cluster
 
-Verify the infrastructure has been created successfully.
+The infrastructure deployment was completed successfully.<br>
 
----
+## Step 4 – Kubernetes Cluster Configuration
 
-## Step 4 – Configure Kubernetes Access
+I configured Kubernetes access by updating the kubeconfig file:<br>
 
-Update the kubeconfig file so kubectl can communicate with the cluster.
+aws eks update-kubeconfig --region <region> --name <cluster-name><br>
 
-```bash
-aws eks update-kubeconfig --region <region> --name <cluster-name>
-```
+Verified the Kubernetes worker nodes:<br>
 
-Verify the connection.
-
-```bash
 kubectl get nodes
-```
 
-The worker nodes should appear with a **Ready** status.
+All available nodes were successfully displayed with Ready status.<br>
 
----
 
-## Step 5 – Install Required Software
+## Step 5 – Required Tools Installation and Verification<br>
 
-Install the required tools on the EC2 instance.
+I installed and configured the required Devops tools on the EC2 environment:<br>
 
 * Docker
 * Jenkins
@@ -122,240 +97,212 @@ Install the required tools on the EC2 instance.
 * Prometheus
 * Grafana
 
-Verify that each service is running correctly before proceeding.
+Each service was checked to confirm that it was running correctly before continuing with the deployment process.<br>
 
----
+## Step 6 – Application Containerization<br>
 
-## Step 6 – Build the Application
+I moved into the application directory:<br>
 
-Navigate to the application directory.
-
-```bash
 cd application
-```
 
-Build the Docker image.
+Built the Docker image:
+docker build -t capstone-project:v1 .<br>
 
-```bash
-docker build -t capstone-project:v1 .
-```
-
-Verify that the image was created.
-
-```bash
+Verified that the Docker image was created successfully:<br>
 docker images
-```
 
----
+The application was successfully containerized.<br>
 
-## Step 7 – Test the Docker Container
+## Step 7 – Docker Container Testing
 
-Run the application locally.
+I tested the application locally by running the Docker container:<br>
 
-```bash
 docker run -d -p 5000:5000 capstone-project:v1
-```
 
-Open the application in a browser to verify that it is running correctly.
+The application was accessed through the browser and verified to be running successfully.<br>
 
-Stop and remove the test container once validation is complete.
+After validation, the test container was stopped and removed.<br>
 
----
+## Step 8 – Docker Hub Image Deployment
 
-## Step 8 – Push the Image to Docker Hub
-
-Log in to Docker Hub.
-
-```bash
+I authenticated with Docker Hub:
 docker login
-```
+Tagged the Docker image:
 
-Tag the Docker image.
+docker tag capstone-project:v1 <dockerhub-username>/capstone-project:v1<br>
 
-```bash
-docker tag capstone-project:v1 <dockerhub-username>/capstone-project:v1
-```
+Pushed the image to Docker Hub:
 
-Push the image.
+docker push teju96/capstone-project:v1<br>
 
-```bash
-docker push <dockerhub-username>/capstone-project:v1
-```
+The Docker image was successfully uploaded and made available for Kubernetes deployment.<br>
 
-Verify that the image is available in the Docker Hub repository.
 
----
+## Step 9 – Jenkins CI/CD Pipeline Configuration
 
-## Step 9 – Configure Jenkins
+I configured Jenkins with the required plugins and credentials.<br>
 
-Install the required Jenkins plugins.
+Configured credentials for:
 
-Configure Jenkins credentials for:
+* GitHub repository access
+* Docker Hub authentication
+* Sonarqube
 
-* GitHub
-* Docker Hub
+Created and executed the Jenkins Pipeline using the Jenkinsfile stored in the GitHub repository.<br>
 
-Create a Jenkins Pipeline job and configure it to use the Jenkinsfile stored in the GitHub repository.
+The pipeline successfully completed the following stages:
 
-The pipeline performs the following stages:
+* Source code checkout
+* Application build
+* Test execution
+* SonarQube code quality analysis
+* Docker image build
+* Docker Hub image push
 
-* Checkout source code
-* Build application
-* Run tests
-* Perform SonarQube analysis
-* Build Docker image
-* Push Docker image to Docker Hub
+The CI pipeline execution completed successfully.
 
-Run the pipeline and verify that all stages complete successfully.
+## Step 10 – Kubernetes Application Deployment
 
----
+I deployed the application into the Kubernetes cluster using the manifest files.<br>
 
-## Step 10 – Deploy the Application to Kubernetes
+Created the Deployment:<br>
+kubectl apply -f deployment.yaml<br>
 
-Create the Kubernetes resources using the manifest files.
+Created the Service:<br>
+kubectl apply -f service.yaml<br>
 
-```bash
-kubectl apply -f deployment.yaml
-```
+Verified the Kubernetes resources:
+kubectl get deployments<br>
+kubectl get pods<br>
+kubectl get svc<br>
 
-```bash
-kubectl apply -f service.yaml
-```
+The application pods were running successfully, and the Loadbalancer service was created for external access.<br>
 
-Verify that the Deployment has been created.
+## Step 11 – GitOps Implementation Using ArgoCD
 
-```bash
-kubectl get deployments
-```
+I installed and configured ArgoCD on the Kubernetes cluster.
 
-Verify the Pods.
+Created an ArgoCD Application connected to the GitHub repository containing the Kubernetes manifests.<br>
 
-```bash
-kubectl get pods
-```
+Enabled automatic synchronization.
 
-Verify the Service.
+The GitOps workflow was successfully implemented:<br>
 
-```bash
-kubectl get svc
-```
+1. Changes were committed to GitHub.
+2. ArgoCD detected repository changes.
+3. ArgoCD synchronized the Kubernetes cluster.
+4. The deployed application matched the desired Git state.<br>
 
-The Service of type **LoadBalancer** exposes the application externally.
+The ArgoCD application status was verified as:
+Synced and Healthy
 
----
+## Step 12 – Deployment Verification<br>
 
-## Step 11 – Configure ArgoCD
+After completing the deployment, I verified:
 
-Install ArgoCD on the Kubernetes cluster.
+* Kubernetes nodes were running successfully.
+* Application pods were in Running state.
+* Deployment was available.
+* Service exposed the application externally.
+* Application was accessible through the browser.
+* ArgoCD synchronization was successful.
 
-Create an ArgoCD Application that points to the GitHub repository containing the Kubernetes manifests.
 
-Enable automatic synchronization.
+## Step 13 – Monitoring Setup
 
-Whenever changes are pushed to the Git repository, ArgoCD detects the updates and synchronizes the cluster to match the desired state.
+I installed and configured Prometheus and Grafana for monitoring using Helm.<br>
 
-This implements the GitOps deployment model.
+Prometheus was configured to collect Kubernetes metrics.
 
----
+Grafana was connected with Prometheus as the monitoring data source.<br>
 
-## Step 12 – Verify the Deployment
-
-After deployment, verify that:
-
-* All Pods are running.
-* The Deployment is available.
-* The Service has an external endpoint.
-* The application is accessible from the browser.
-* ArgoCD shows the application status as **Synced** and **Healthy**.
-
----
-
-## Step 13 – Configure Monitoring
-
-Install Prometheus and Grafana.
-
-Configure Prometheus to collect metrics from the Kubernetes cluster.
-
-Connect Grafana to Prometheus as the data source.
-
-Import or create dashboards to monitor:
+Dashboards were configured to monitor:
 
 * Node health
-* Pod status
+* Pod availability
 * CPU utilization
 * Memory utilization
 * Application availability
 
-Verify that metrics are being collected successfully.
+Metrics collection was verified successfully.
 
----
+# Final Validation Checklist
 
-# Validation Checklist
+The deployment was completed successfully after confirming:<br>
 
-Confirm the following before considering the deployment successful:
+✅ Terraform provisioning completed successfully
+✅ AWS resources created successfully
+✅ Kubernetes nodes displayed Ready status
+✅ Docker image pushed successfully to Docker Hub
+✅ Jenkins pipeline completed successfully
+✅ SonarQube analysis completed
+✅ Kubernetes Deployment created successfully
+✅ Application Pods running successfully
+✅ Service accessible externally
+✅ ArgoCD application status showed Synced and Healthy
+✅ Prometheus metrics collected successfully
+✅ Grafana dashboards displayed monitoring data
 
-* Terraform completed successfully.
-* AWS resources were created.
-* Kubernetes nodes are in the Ready state.
-* Docker image is available in Docker Hub.
-* Jenkins pipeline completed successfully.
-* Kubernetes Deployment is available.
-* Pods are running.
-* Service is accessible externally.
-* ArgoCD status is Synced and Healthy.
-* Prometheus is collecting metrics.
-* Grafana dashboards display cluster metrics.
+# Rollback Procedure Tested
 
----
+In case of deployment failure, I verified the rollback approach.<br>
 
-# Rollback Procedure
+The Kubernetes deployment can be rolled back using:<br>
 
-If a deployment fails, first identify the cause using Jenkins logs, Kubernetes events, and ArgoCD status.
+kubectl rollout undo deployment <deployment-name><br>
 
-To roll back the Kubernetes Deployment:
+For GitOps-based rollback, the previous stable Kubernetes manifest version can be restored in the GitHub repository. After pushing the changes, ArgoCD automatically detects the repository update and synchronizes the Kubernetes environment back to the stable version.<br>
 
-```bash
-kubectl rollout undo deployment <deployment-name>
-```
 
-If GitOps is being used, revert the application manifests in the GitHub repository to the previous stable version and push the changes. ArgoCD automatically detects the updated repository state and synchronizes the cluster, restoring the previous working version of the application.
+# Troubleshooting Performed
 
----
+## Terraform Issues
 
-# Troubleshooting
+Checked:
 
-**Terraform Issues**
+* AWS credentials configuration
+* Terraform validation
+* Terraform state information
 
-* Verify AWS credentials.
-* Run `terraform validate`.
-* Check the Terraform state.
+Command used:
+terraform validate
 
-**Docker Issues**
+## Docker Issues
 
-* Confirm Docker is running.
-* Verify the Dockerfile.
-* Review the Docker build logs.
+Checked:
 
-**Jenkins Issues**
+* Docker service status
+* Image build logs
 
-* Verify pipeline credentials.
-* Check Jenkins console output.
-* Confirm Docker permissions.
+## Jenkins Issues
 
-**Kubernetes Issues**
+Checked:
 
-* Check Pod status using `kubectl get pods`.
-* Review Pod logs using `kubectl logs <pod-name>`.
-* Describe resources using `kubectl describe pod <pod-name>`.
+* Pipeline credentials
+* Jenkins console logs
+* Docker permissions
 
-**ArgoCD Issues**
+## Kubernetes Issues
 
-* Confirm the repository is reachable.
-* Verify synchronization status.
-* Check the ArgoCD application logs.
+Checked:
+kubectl get pods
 
----
+Reviewed logs:
+kubectl logs <pod-name>
+
+Inspected resources:
+kubectl describe pod <pod-name>
+
+## ArgoCD Issues
+
+Verified:
+
+* Repository connectivity
+* Application synchronization status
+* Application health status
+* Deployment logs
 
 # Conclusion
 
-This deployment process provisions the infrastructure using Terraform, containerizes the application with Docker, automates build and validation through Jenkins, deploys the application to Kubernetes using GitOps with ArgoCD, and monitors the environment using Prometheus and Grafana. Following these steps provides a consistent, repeatable, and reliable deployment process that aligns with modern DevOps practices.
+The AWS GitOps Platform Capstone deployment was successfully completed. The environment was provisioned using Terraform, the application was containerized using Docker, CI/CD automation was implemented using Jenkins, application deployment was managed through Kubernetes and ArgoCD using GitOps principles, and monitoring was enabled using Prometheus and Grafana.
+
