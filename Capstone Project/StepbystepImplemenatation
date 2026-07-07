@@ -1,18 +1,18 @@
-## AWS GitOps Platform Capstone – Client-Facing Explanation
+# AWS GitOps Platform Capstone – Client-Facing Explanation
 
 ## Project Overview
 
-The objective of this project was to implement an end-to-end DevOps workflow that automates infrastructure provisioning, application containerization, continuous integration and deployment, GitOps-based delivery, and monitoring. Due to issues with Visual Studio Code, I completed the entire project on an AWS EC2 instance, where I installed and configured all the required tools.
+The objective of this project was to implement an end-to-end DevOps workflow that automates infrastructure provisioning, application containerization, continuous integration, GitOps-based deployment, and monitoring. Due to issues with Visual Studio Code, I completed the entire project on an AWS EC2 instance, where I installed and configured all the required tools.
 
 ## Implementation Steps
 
 ### Step 1: Infrastructure Provisioning with Terraform
 
-I used Terraform to provision the required AWS infrastructure by writing Infrastructure as Code (IaC). The Terraform configuration included AWS resources such as the VPC, subnets, IAM roles, and security groups. After creating the configuration files, I manually executed the Terraform workflow using the following commands:
+I used Terraform to provision the required AWS infrastructure by writing Infrastructure as Code (IaC). The Terraform configuration included AWS resources such as the VPC, subnets, IAM roles, security groups, and the EKS cluster. After creating the configuration files, I executed the Terraform workflow using:
 
-* `terraform init`
-* `terraform plan`
-* `terraform apply`
+* terraform init
+* terraform plan
+* terraform apply
 
 These commands initialized Terraform, generated the execution plan, and provisioned the infrastructure successfully.
 
@@ -22,9 +22,9 @@ After provisioning the infrastructure, I installed and configured the required t
 
 * Docker
 * Jenkins
-* Java 17 (required for Jenkins)
+* Java 17
 * SonarQube
-* Kubernetes tools (kubectl)
+* kubectl
 * ArgoCD
 * Prometheus
 * Grafana
@@ -33,49 +33,59 @@ This prepared the environment for building, deploying, and monitoring the applic
 
 ### Step 3: Application Containerization
 
-I downloaded a sample Flask application from GitHub and created a `Dockerfile` and `requirements.txt` file to containerize the application.
+I sourced a sample Flask application from GitHub and created a Dockerfile and requirements.txt file to containerize the application.
 
-I then built and tested the Docker image locally using Docker commands. After verifying that the application was working correctly, I logged into Docker Hub, tagged the image, and pushed it to my Docker Hub repository so it could be used during deployment.
+I built the Docker image, tested it locally, and verified that the application was functioning correctly. Once validated, I logged in to Docker Hub, tagged the image, and pushed it to my Docker Hub repository so it could be used for deployment within the Kubernetes environment.
 
 ### Step 4: Kubernetes Deployment Configuration
 
-To deploy the application, I created the Kubernetes manifest files:
+To deploy the application, I created Kubernetes manifest files including deployment.yaml and service.yaml.
 
-* `deployment.yaml`
-* `service.yaml`
+The application was deployed to the EKS cluster using a Deployment resource rather than creating Pods directly. Since containers and Pods are ephemeral in nature, Deployments provide self-healing capabilities by automatically recreating failed Pods and maintaining the desired number of replicas. This ensures high availability and reliability of the application.
 
-The service was configured as a **LoadBalancer** to expose the application externally. After deployment, I verified that the application was running successfully using Kubernetes commands to check the deployments and services.
+The deployment flow follows:
+
+EKS Cluster → Worker Nodes → Pods → Docker Containers → Flask Application
+
+To expose the application externally, I created a Service of type LoadBalancer. The Service provides a stable endpoint for users and routes traffic to the healthy application Pods, even if Pods are restarted or recreated.
+
+The deployment was verified using Kubernetes commands to check the status of deployments, Pods, and services.
 
 ### Step 5: CI/CD Pipeline with Jenkins
 
-To automate the build and deployment process, I created a Jenkins pipeline using a `Jenkinsfile`. The pipeline uses Docker as the build agent, providing an isolated and consistent environment for every pipeline execution.
+To automate the software delivery process, I created a Jenkins pipeline using a Jenkinsfile. The pipeline uses Docker as the build agent, providing an isolated and consistent environment for each pipeline execution.
 
-The pipeline is designed to perform the following tasks:
+The pipeline is designed to perform the following stages:
 
 * Source code checkout
 * Application build
 * Testing
 * Code quality analysis using SonarQube
 * Docker image build
-* Push the Docker image to Docker Hub
+* Docker image push to Docker Hub
 
-I also configured the required credentials in Jenkins, including Docker Hub and Git repository credentials, to securely authenticate during the pipeline execution.
+I also configured the required credentials in Jenkins, including Docker Hub and Git repository credentials, to securely authenticate during pipeline execution.
 
 ### Step 6: GitOps Deployment with ArgoCD
 
-For continuous deployment, I implemented GitOps using ArgoCD. ArgoCD continuously monitors the Git repository and automatically synchronizes any changes to the Kubernetes cluster, ensuring that the deployed application always matches the desired state stored in Git.
+For continuous deployment, I implemented GitOps using ArgoCD. Instead of manually deploying changes to the cluster, ArgoCD continuously monitors the Git repository and automatically synchronizes any approved changes to the Kubernetes cluster.
 
-### Step 7: Monitoring
+In this workflow, Jenkins is responsible for building, testing, scanning, and publishing the Docker image, while ArgoCD is responsible for deploying and maintaining the desired application state within the Kubernetes cluster.
 
-To monitor the application and Kubernetes environment, I installed Prometheus and Grafana.
+This approach improves deployment consistency, traceability, and operational reliability.
 
-* Prometheus collects application and cluster metrics.
-* Grafana visualizes these metrics through dashboards, allowing monitoring of application health, resource utilization, and overall system performance.
+### Step 7: Monitoring and Observability
+
+To monitor the Kubernetes environment and application performance, I installed Prometheus and Grafana.
+
+Prometheus collects metrics from the cluster and application workloads, while Grafana provides dashboards that visualize system health, resource utilization, and application performance. This enables proactive monitoring and faster troubleshooting.
 
 ### Step 8: Rollback Strategy
 
-To ensure application reliability, a rollback strategy was considered as part of the deployment process. In the event of a failed deployment, Kubernetes and ArgoCD can be used to roll back the application to the last stable version, minimizing downtime and ensuring service continuity.
+A rollback strategy was incorporated to ensure deployment reliability. In the event of a failed deployment or application issue, Kubernetes and ArgoCD can be used to revert the application to the last stable version, minimizing downtime and ensuring service continuity.
 
 ## Conclusion
 
-This project demonstrates a complete DevOps workflow, starting from infrastructure provisioning with Terraform, application containerization using Docker, CI/CD automation with Jenkins, GitOps-based deployment using ArgoCD, and monitoring with Prometheus and Grafana. The implementation follows modern DevOps practices by combining Infrastructure as Code, containerization, automation, continuous deployment, and monitoring to deliver applications in a reliable and repeatable manner.
+This project demonstrates a complete DevOps and GitOps workflow, beginning with infrastructure provisioning using Terraform, followed by application containerization with Docker, CI automation using Jenkins and SonarQube, deployment to Amazon EKS using Kubernetes resources, GitOps-based delivery through ArgoCD, and monitoring with Prometheus and Grafana.
+
+The solution follows modern cloud-native and DevOps best practices by combining Infrastructure as Code, containerization, CI/CD automation, GitOps deployment, monitoring, and rollback capabilities to deliver applications in a reliable, scalable, and repeatable manner.
