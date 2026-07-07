@@ -1,50 +1,80 @@
+```groovy
 pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "yourdockerhubusername/eks-flask-app"
+        IMAGE_NAME = "teju96/capstone-project"
         IMAGE_TAG = "${BUILD_NUMBER}"
     }
 
     stages {
 
-        stage('Clone Code') {
+        stage('Checkout Code') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/your-repo.git'
+                credentialsId: 'github',
+                url: 'https://github.com/Tejashwini-Javejar/orn-ai-devops-assessment.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'pip3 install -r requirements.txt'
+            }
+        }
+
+        stage('SonarQube Scan') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                    sonar-scanner \
+                    -Dsonar.projectKey=capstone-project \
+                    -Dsonar.sources=.
+                    '''
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t $DOCKER_IMAGE:$IMAGE_TAG ."
+                sh "docker build -t $IMAGE_NAME:$IMAGE_TAG ."
             }
         }
 
-        stage('Login to Docker Hub') {
+        stage('Push Docker Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'USERNAME',
-                    passwordVariable: 'PASSWORD')]) {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
 
-                    sh "echo $PASSWORD | docker login -u $USERNAME --password-stdin"
+                    sh '''
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                    docker push $IMAGE_NAME:$IMAGE_TAG
+                    docker logout
+                    '''
                 }
             }
         }
 
-        stage('Push Image') {
+        stage('Update Deployment File') {
             steps {
-                sh "docker push $DOCKER_IMAGE:$IMAGE_TAG"
-            }
-        }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                sh """
-                kubectl set image deployment/flask-app flask-app=$DOCKER_IMAGE:$IMAGE_TAG -n dev
-                kubectl rollout status deployment/flask-app -n dev
-                """
+                sh '''
+                sed -i "s|image:.*|image: teju96/capstone-project:${BUILD_NUMBER}|" deployment.yaml
+                '''
             }
         }
     }
+
+    post {
+        success {
+            echo "Pipeline completed successfully!"
+        }
+
+        failure {
+            echo "Pipeline failed."
+        }
+    }
 }
+```
