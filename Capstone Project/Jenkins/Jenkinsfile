@@ -1,4 +1,5 @@
 pipeline {
+
     agent any
 
     environment {
@@ -17,32 +18,48 @@ pipeline {
             }
         }
 
+
         stage('Install Dependencies') {
             steps {
-                sh 'pip3 install -r requirements.txt'
+                sh '''
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install --upgrade pip
+                pip install -r requirements.txt
+                '''
             }
         }
 
+
         stage('SonarQube Scan') {
-           steps {
-             withSonarQubeEnv('SonarQube') {
-             sh """
-             sonar-scanner \
-            -Dsonar.projectKey=capstone-project \
-            -Dsonar.sources=.
-            """
+            steps {
+                withSonarQubeEnv('SonarQube') {
+
+                    sh """
+                    ${SCANNER_HOME}/bin/sonar-scanner \
+                    -Dsonar.projectKey=capstone-project \
+                    -Dsonar.sources=.
+                    """
+
                 }
             }
         }
 
+
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                sh """
+                docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+
+                docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
+                """
             }
         }
 
+
         stage('Push Docker Image') {
             steps {
+
                 withCredentials([usernamePassword(
                     credentialsId: 'docker-cred',
                     usernameVariable: 'USERNAME',
@@ -50,9 +67,10 @@ pipeline {
                 )]) {
 
                     sh """
-                    echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
+                    echo \$PASSWORD | docker login -u \$USERNAME --password-stdin
 
                     docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                    docker push ${IMAGE_NAME}:latest
 
                     docker logout
                     """
@@ -60,14 +78,21 @@ pipeline {
             }
         }
 
+
         stage('Update Deployment File') {
             steps {
+
                 sh """
                 sed -i 's|image:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|' deployment.yaml
+
+                cat deployment.yaml
                 """
+
             }
         }
+
     }
+
 
     post {
 
@@ -75,8 +100,15 @@ pipeline {
             echo "Pipeline completed successfully!"
         }
 
+
         failure {
             echo "Pipeline failed."
         }
+
+
+        always {
+            cleanWs()
+        }
+
     }
 }
