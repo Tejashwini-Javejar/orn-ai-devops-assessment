@@ -34,14 +34,18 @@ pipeline {
         }
 
 
-        stage('SonarQube Scan') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh '''
-                    sonar-scanner \
-                    -Dsonar.projectKey=capstone-project \
-                    -Dsonar.sources="Capstone Project/app"
-                    '''
+stage('SonarQube Scan') {
+    steps {
+        withSonarQubeEnv('SonarQube') {
+            sh '''
+            sonar-scanner \
+            -Dsonar.projectKey=capstone-project \
+            -Dsonar.sources="Capstone Project/app" \
+            -Dsonar.python.version=3.14
+            '''
+        }
+    }
+}
                 }
             }
         }
