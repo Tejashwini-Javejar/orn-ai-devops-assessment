@@ -2,7 +2,7 @@
 
 ## Answer:
 
-Yes, I have worked with GitOps tools such as Argo CD. GitOps is a process where it uses git as a single source of truth for both application deployments and infrastructure configurations. Any changes made in the Git repository are automatically reflected in the Kubernetes cluster through automation tools like Argo CD.
+Yes, I have worked with GitOps tools such as Argo CD. Gitops is a process where it uses git as a single source of truth for both application deployments and infrastructure configurations. Any changes made in the Git repository are automatically reflected in the Kubernetes cluster through automation tools like Argo CD.
 
 As i have explained in the CI/CD section, I used Argo CD as part of the deployment process in the CI/CD pipeline. We stored Kubernetes manifests in a GitHub repository, and Argo CD continuously monitored this repository.
 
@@ -10,6 +10,13 @@ We also used Argo CD Image Updater, which automatically monitors the container r
 
 Argo CD continuously performs reconciliation between the desired state in GitHub and the actual state in the Kubernetes cluster. If it detects any differences, it automatically syncs and deploys the changes to bring the cluster back to the desired state, especially when auto-sync is enabled.
 
+I am currently learning advanced concepts like multi-cluster management, sync waves, hooks, and progressive delivery patterns.
+
+## Issue handled
 In some cases, I have faced OutOfSync issue, which happened when manual changes were made directly inside the Kubernetes cluster. Since auto-sync was enabled, Argo CD automatically reverted those changes and restored the desired state from Git.
 
-I am currently learning advanced concepts like multi-cluster management, sync waves, hooks, and progressive delivery patterns.
+## Outcome: 
+Gitops improved deployment consistency, reduced manual changes, and provided better version controly for Kubernetes deployments.
+
+
+
