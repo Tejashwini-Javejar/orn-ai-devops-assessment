@@ -35,4 +35,5 @@ For production deployments, a manual approval stage can be configured in the Jen
 Rollback:
 If a deployment fails or issues are identifined after deployment, Argo CD allows us to roll back to the previous stable application version by syncing the previous Git commit. This enables faster recovery and minimizes downtime.    
 
-I have added the project details under the projects section.
+I have implemented the Spring Boot application project and updated my github with the implementation details, architecture, and deployment information.
+
