@@ -5,8 +5,6 @@
 
 Yes, In my previous projects, I used Terraform to provision the resourcses using Hashicorp language. The infrastructure included a VPC, public and private subnets, an Internet Gateway, NAT Gateway, route tables, security groups, EC2 instances and an Application Load Balancer (ALB). Using Terraform allowed us to automate the infrastructure deployment and easier to manage.
 
-After provisioning the infrastructure, I used Terraform to manage updates and infrastructure changes without manually creating resources through the AWS Console.
-
 In my previous project, I used a modular approach, where Terraform allows us to break down the infrastructure into small, self-contained components. We can create reusable templates instead of rewriting the same code every time. This makes the code easier to maintain, improves reusability and also reduces the time required to provision resources.
 
 I have worked with the fallowing Terraform commands<br>
