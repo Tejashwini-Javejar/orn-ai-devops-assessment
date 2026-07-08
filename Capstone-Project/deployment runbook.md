@@ -1,6 +1,6 @@
 # Deployment Runbook – AWS GitOps Platform Capstone
 
-This runbook documents the deployment activities completed for the AWS GitOps Platform Capstone project. The implementation included AWS infrastructure provisioning, application containerization, CI/CD pipeline configuration, Kubernetes deployment, GitOps integration using ArgoCD, monitoring setup, and rollback validation.
+This runbook explains the deployment activities completed for the AWS Gitops Platform Capstone project. The implementation included AWS infrastructure provisioning, application containerization, CI/CD pipeline configuration, Kubernetes deployment, GitOps integration using ArgoCD, monitoring setup, and rollback validation.
 
 # Prerequisites Completed
 
@@ -25,10 +25,9 @@ Before starting the deployment, I prepared the required environment and installe
 
 ## Step 1 – AWS EC2 Environment Setup
 
-I used an AWS EC2 instance as the development and deployment environment.
+I used an AWS EC2 instance as the deployment environment.
 
 I connected to the EC2 instance using SSH:
-
 ssh -i <key.pem> ubuntu@<public-ip>
 
 The EC2 environment was successfully prepared for the deployment activities.
@@ -44,20 +43,17 @@ The source code and deployment files were successfully downloaded and verified.<
 
 ## Step 3 – AWS Infrastructure Provisioning Using Terraform<br>
 
-I navigated to the Terraform configuration directory:<br>
+I navigated to the Terraform configuration directory and manually performed the below steps:<br>
 
 cd terraform<br>
 
 Initialized Terraform:<br>
-
 terraform init<br>
 
 Validated the Terraform configuration and reviewed the deployment plan:<br>
-
 terraform plan<br>
 
 Provisioned the AWS infrastructure:<br>
-
 terraform apply<br>
 
 Terraform successfully created the required AWS resources:<br>
@@ -74,11 +70,9 @@ The infrastructure deployment was completed successfully.<br>
 ## Step 4 – Kubernetes Cluster Configuration
 
 I configured Kubernetes access by updating the kubeconfig file:<br>
-
 aws eks update-kubeconfig --region <region> --name <cluster-name><br>
 
 Verified the Kubernetes worker nodes:<br>
-
 kubectl get nodes
 
 All available nodes were successfully displayed with Ready status.<br>
@@ -101,9 +95,7 @@ Each service was checked to confirm that it was running correctly before continu
 
 ## Step 6 – Application Containerization<br>
 
-I moved into the application directory:<br>
-
-cd application
+I built the image using the docker file<br>
 
 Built the Docker image:
 docker build -t capstone-project:v1 .<br>
@@ -127,12 +119,11 @@ After validation, the test container was stopped and removed.<br>
 
 I authenticated with Docker Hub:
 docker login
-Tagged the Docker image:
 
+Tagged the Docker image:
 docker tag capstone-project:v1 <dockerhub-username>/capstone-project:v1<br>
 
 Pushed the image to Docker Hub:
-
 docker push teju96/capstone-project:v1<br>
 
 The Docker image was successfully uploaded and made available for Kubernetes deployment.<br>
@@ -180,10 +171,7 @@ The application pods were running successfully, and the Loadbalancer service was
 
 ## Step 11 – GitOps Implementation Using ArgoCD
 
-I installed and configured ArgoCD on the Kubernetes cluster.
-
-Created an ArgoCD Application connected to the GitHub repository containing the Kubernetes manifests.<br>
-
+I installed and configured ArgoCD on the Kubernetes cluster.Created an ArgoCD Application connected to the GitHub repository containing the Kubernetes manifests.<br>
 Enabled automatic synchronization.
 
 The GitOps workflow was successfully implemented:<br>
@@ -213,7 +201,6 @@ After completing the deployment, I verified:
 I installed and configured Prometheus and Grafana for monitoring using Helm.<br>
 
 Prometheus was configured to collect Kubernetes metrics.
-
 Grafana was connected with Prometheus as the monitoring data source.<br>
 
 Dashboards were configured to monitor:
@@ -304,5 +291,5 @@ Verified:
 
 # Conclusion
 
-The AWS GitOps Platform Capstone deployment was successfully completed. The environment was provisioned using Terraform, the application was containerized using Docker, CI/CD automation was implemented using Jenkins, application deployment was managed through Kubernetes and ArgoCD using GitOps principles, and monitoring was enabled using Prometheus and Grafana.
+The AWS Gitops Platform Capstone deployment was successfully completed. The environment was provisioned using Terraform, the application was containerized using Docker, CI/CD automation was implemented using Jenkins, application deployment was managed through Kubernetes and ArgoCD using GitOps principles, and monitoring was enabled using Prometheus and Grafana.
 
