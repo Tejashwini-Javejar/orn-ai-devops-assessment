@@ -23,3 +23,11 @@ I also worked with Terraform variables, which allow us to avoid hardcoding value
 Additionally, I worked with Terraform workspaces to maintain separate state files for different environments such as development, testing and production. This helps manage multiple environments while using the same Terraform configuration.
 
 I have also worked with Terraform provisioners to execute commands or scripts on remote machines by establishing SSH connections after the infrastructure is provisioned, whenever additional configuration was required.
+
+## Issues Handled
+State drift: Some times, resources were modified manually through the AWS Console. Running terraform plan showed the differences between the actual infrastructure and the Terraform configuration. We either imported the existing resources into the state or updated the Terraform code to match the desired state.
+
+Backend issues: We stored the Terraform state in an S3 backend with DynamoDB state locking. If backend access failed, I checked IAM permissions, the S3 bucket configuration, and the DynamoDB table before retrying.
+
+## Outcome: 
+Terraform enabled us to automate infrastructure provisioning,reduce manual effort, and manage AWS resources using Infrastructure as Code.
