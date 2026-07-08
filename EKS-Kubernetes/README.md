@@ -7,25 +7,21 @@
 I created and managed the following Kubernetes resources:
 
 ## Deployment
-Used Deployment resources to:
 
 Deploy containerized applications.
 Manage pod replicas.
 Ensure application availability.
 
 ## Service
-Used Kubernetes Services to:
 
 Kubernernet service provide stable network identity for accessing a group of pods. It uses selector to identify to which pod the traffic should be routed evn if thier IP address changes. It automaticllay balances the load among the pods. It uses different service types to expose application internally and externally.
 
 ## ConfigMap and Secrets
-Used ConfigMaps and Secrets to:
 
 ConfigMap- stores non-sensitive configuration data in a plane text.
 Secrets- Stores sensitive info such as token keys, passwords, API keys. and also kubernet supports encryption at rest, because secrets are base-64 encoded. Data can be encrypted at rest before getting saved in etcd.
 
 ## Ingress
-Used Ingress for:
 
 Ingess is a kubernet API object it defines rules for routing external traffic to the internal services. It acts as a traffic router-deciding which service should handle which request based on the URL, Hostname and domain name.
 It uses ingress controller --It does the actual implemenattaion. It listens to the ingress rules and manage the routing
