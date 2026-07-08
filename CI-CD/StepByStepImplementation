@@ -33,7 +33,16 @@ Downloads dependencies
 Compiles the code
 Creates the JAR file inside the target folder
 
-## 4. Docker image build stage
+## 4.SonarQube Static Code Analysis
+
+After the Maven build is successful, Jenkins runs SonarQube analysis.
+I integrated SonarQube to:
+Analyze code quality
+Identify bugs and vulnerabilities
+Detect maintainability issues
+Jenkins uses the SonarQube quality gate result to verify whether the code meets the required standards before continuing the pipeline.
+
+## 5. Docker image build stage
 
 After the build is successful, I create a Docker image using the Dockerfile.
 
@@ -48,35 +57,50 @@ Then Jenkins runs:
 docker build -t cicd-pipeline:v1 .
 This creates a Docker image containing my Spring Boot application.
 
-## 5. Running the Docker container
+## 6. Running the Docker container
 
 After building the image, I run the container using Jenkins:
 docker run -d --name app -p 8081:8080 cicd-pipeline:v1
 Initially, I faced a problem because port 8080 was already in use by another Java process.
-So I fixed it by mapping the container to port 8081.
+So I fixed it by mapping the container to port 8081.\
 
-## 6. Application deployment
+## 7. Push Docker Image to Container Registry
 
-Once the container starts successfully:
-The Spring Boot application runs inside Docker
-It becomes accessible in the browser at:
-http://<EC2-IP>:8081
+After creating the Docker image, Jenkins pushes the image to a container registry.
+The Kubernetes cluster uses this image to deploy the application.
 
-## 7. Overall CI/CD flow
+## 8. Kubernetes Deployment
 
-So the complete pipeline works like this:
+For application deployment, I used Kubernetes.
+The application was deployed using Kubernetes manifests such as:
 
-Jenkins pulls code from GitHub
-Maven builds the project and generates a JAR
-Docker builds an image using the JAR
-Docker runs the container
-Spring Boot application gets deployed
+* Deployment
+* Service
+The Kubernetes Deployment manages the application pods and ensures the required number of replicas are running.
+The Service exposes the application inside/outside the Kubernetes cluster.
 
-## Issues I faced and fixed
+## 8. GitOps Deployment Using Argo CD
 
-During the implementation, I faced a few issues:
+I used Argo CD to implement the GitOps deployment approach.
+The Kubernetes manifests were stored in a Git repository, which acted as the single source of truth.
 
-Docker permission issue → fixed by adding Jenkins user to docker group
-Maven could not find pom.xml → fixed by correcting directory path
-Jenkins Docker agent issue → removed inside() usage
-Port conflict (8080 busy) → changed to 8081
+The deployment flow works like this:
+1. Jenkins builds the application and creates a Docker image.
+2. The image is pushed to the container registry.
+3. The Kubernetes manifest is updated with the new image version.
+4. Argo CD detects the change in Git.
+5. Argo CD automatically synchronizes the changes with the Kubernetes cluster.
+6. The new application version is deployed.
+
+Argo CD continuously compares the desired state in Git with the actual state in Kubernetes. If any differences are detected, it automatically deploy the changes onto the cluster.
+
+## Additional Issues I Faced
+
+During implementation, I handled issues such as:
+
+* Docker permission issue → Added Jenkins user to the Docker group.
+* Maven could not find `pom.xml` → Corrected the Jenkins working directory.
+* Port conflict → Changed application port mapping from 8080 to 8081.
+* Kubernetes deployment issues → Verified pod status using `kubectl`, checked logs, and corrected deployment configurations.
+* Argo CD OutOfSync issue → Investigated differences between Git manifests and the Kubernetes cluster state and allowed Argo CD to reconcile the changes.
+
