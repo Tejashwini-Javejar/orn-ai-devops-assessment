@@ -48,12 +48,6 @@ kubectl get namespaces- We can see all namespaces<br>
 kubectl create namespace <name>- We can create a new namespace<br>
 kubectl get pods -n <namespace>- We can see pods in a specific namespace<br>
 
-## Helm commands 
-helm version - We can check Helm version<br>
-helm create <chart-name>- We can create a Helm chart structure<br>
-helm install <name> ./chart - We can deploy application using Helm<br>
-helm upgrade <name> ./chart- We can update application using Helm<br>
-helm list- We can see all Helm deployments<br>
-helm status <name>- We can check deployment status<br>
+
 
  
