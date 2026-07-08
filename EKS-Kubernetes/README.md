@@ -3,8 +3,7 @@
 ## Answer
 
 ## Kubernetes Resources Used
-
-I created and managed the following Kubernetes resources:
+Yes, I created and managed the following Kubernetes resources:
 
 ## Deployment
 
