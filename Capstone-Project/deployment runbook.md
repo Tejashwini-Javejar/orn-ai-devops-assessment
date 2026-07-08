@@ -128,6 +128,8 @@ docker push teju96/capstone-project:v1<br>
 
 The Docker image was successfully uploaded and made available for Kubernetes deployment.<br>
 
+I used Docker Hub for this project because I was working within the AWS Free Tier limits and wanted to avoid using additional AWS resources that could consume my remaining credits. Docker Hub is a free and open container registry, so it was a practical choice for demonstrating the Docker build, CI/CD pipeline, and Kubernetes deployment process. In my previous project, I used Amazon ECR, and for a production AWS environment I would prefer ECR because it integrates better with AWS services and provides better security and access control."
+
 
 ## Step 9 – Jenkins CI/CD Pipeline Configuration
 
