@@ -171,7 +171,7 @@ I checked:
 
 kubectl get svc<br>
 kubectl get endpoints<br>
-kubectl get pods<br
+kubectl get pods<br>
                   
 I verified:
 
