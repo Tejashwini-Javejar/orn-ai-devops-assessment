@@ -71,7 +71,7 @@ The Kubernetes cluster uses this image to deploy the application.
 
 ## 8. Kubernetes Deployment
 
-For application deployment, I used Kubernetes.
+For application deployment, I used Kubernetes and minikube cluster.
 The application was deployed using Kubernetes manifests such as:
 
 * Deployment
