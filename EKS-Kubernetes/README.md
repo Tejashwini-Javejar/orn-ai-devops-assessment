@@ -3,7 +3,11 @@
 ## Answer
 
 ## Kubernetes Resources Used
-Yes, I created and managed the following Kubernetes resources:
+I have hands-on experience deploying and managing containerized applications on Kubernetes. I created and maintained Deployments, Services, ConfigMaps, Secrets, and Ingress resources to deploy applications and expose them internally and externally.
+
+I deployed workloads using Kubernetes manifests and used Argo CD to implement Gitops-based deployments, where Kubernetes manifests were stored in GitHub and automatically synchronized with the cluster
+
+I created and managed the following Kubernetes resources:
 
 ## Deployment
 
