@@ -67,6 +67,8 @@ Terraform successfully created the required AWS resources:<br>
 
 The infrastructure deployment was completed successfully.<br>
 
+I provisioned the AWS infrastructure manually through Terraform on the EC2 instance because this was the initial infrastructure setup phase. I wanted to verify the Terraform configuration and AWS resources before automation. In a production CI/CD environment, I can integrate Terraform with Jenkins to automate infrastructure provisioning using a pipeline.
+
 ## Step 4 – Kubernetes Cluster Configuration
 
 I configured Kubernetes access by updating the kubeconfig file:<br>
