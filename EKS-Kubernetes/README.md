@@ -18,45 +18,64 @@ Kubernernet service provide stable network identity for accessing a group of pod
 
 ## ConfigMap and Secrets
 
-ConfigMap- stores non-sensitive configuration data in a plane text.
+ConfigMap- stores non-sensitive configuration data in a plane text.<br>
 Secrets- Stores sensitive info such as token keys, passwords, API keys. and also kubernet supports encryption at rest, because secrets are base-64 encoded. Data can be encrypted at rest before getting saved in etcd.
 
-## Ingress
+## Ingress<br>
 
-Ingess is a kubernet API object it defines rules for routing external traffic to the internal services. It acts as a traffic router-deciding which service should handle which request based on the URL, Hostname and domain name.
-It uses ingress controller --It does the actual implemenattaion. It listens to the ingress rules and manage the routing
+Ingess is a kubernet API object it defines rules for routing external traffic to the internal services. It acts as a traffic router-deciding which service should handle which request based on the URL, Hostname and domain name.<br>
+It uses ingress controller --It does the actual implemenattaion. It listens to the ingress rules and manage the routing<br>
 
-## Deployment Process
+## Deployment Process<br>
 
 I deployed Docker container images into Kubernetes using Deployment manifests.<br>
 The Kubernetes Deployment manages the application pods and ensures the required number of replicas are running.<br>
 I used Services and Ingress to expose the application and configure traffic routing.<br>
 
-## Kubernetes Troubleshooting Experience
-1. Pod Memory Leak Issue in Shared Kubernetes Cluster<br>
+# Kubernetes Troubleshooting Experience<br>
 
-When I joined the organization, the Kubernetes cluster was shared between multiple development teams.One of the application pods started consuming excessive memory, which affected the overall cluster resource availability.<br>
+## Pod Memory Leak Issue in a Shared Kubernetes Cluster<br>
 
---Issue<br>
+When I joined the organization, we had a Kubernetes cluster that was shared by multiple development teams. One day, an application pod started using a very high amount of memory, which affected the available resources in the cluster.<br>
 
-A pod from one application was continuously increasing memory usage and consuming more cluster resources than expected.Since multiple teams were using the same cluster, uncontrolled resource usage from one application could impact other workloads.<br>
+Because multiple teams were using the same cluster, one application's excessive resource usage could impact other applications. I needed to identify the issue and make sure it would not happen again.<br>
 
---Investigation<br>
+## Issue<br>
 
-I analyzed the resource usage using Kubernetes commands:<br>
+One application pod was continuously increasing its memory usage. Over time, it started consuming more resources than expected and created pressure on the Kubernetes cluster.<br>
+
+This could have affected other teams applications by reducing the available CPU and memory resources.<br>
+
+## Investigation<br>
+
+I started troubleshooting by checking the resource usage of all running pods using:<br>
+
 kubectl top pods<br>
-This helped identify pods consuming higher memory.<br>
-I also checked pod details and events:<br>
+
+This helped me identify which pods were using more memory and CPU.<br>
+
+After identifying the pod, I checked pod events details using:<br>
+
 kubectl describe pod <pod-name><br>
-and reviewed application logs:<br>
+
+This helped me understand the pod status, events, and resource-related issues.<br>
+
+I also checked the application logs using:<br>
+
 kubectl logs <pod-name><br>
 
-Through monitoring and resource analysis, we identified the pod causing excessive memory consumption.<br>
+By analyzing the resource usage, pod details, and application logs, I was able to identify the pod that was causing high memory leakage.<br>
 
---Solution<br>
-To prevent similar issues in the shared cluster, I implemented Kubernetes resource management:<br>
-Resource Requests and Limits<br>
-I configured resource limits on pods:<br>
+## Solution
+
+To prevent this issue in the future, we implemented Kubernetes resource management.<br>
+
+### Resource Requests and Limits<br>
+
+I added CPU and memory requests and limits to the application pods.<br>
+
+Example:<br>
+
 resources:<br>
   requests:<br>
     memory: "256Mi"<br>
@@ -65,98 +84,137 @@ resources:<br>
     memory: "512Mi"<br>
     cpu: "500m"<br>
 
-This ensured:<br>
-Each pod received reuired minimum resources.<br>
-Pods could not consume unlimited cluster resources.<br>
-Kubernetes could properly schedule workloads.<br>
+This helped because:<br>
 
-Namespace Resource Quota<br>
-I also applied resource quotas at the namespace level.Resource quotas helped control the total amount of CPU and memory that each development team's namespace could consume.<br>
+* The pod received the minimum resources it needed to run.<br>
+* The pod could not consume more memory or CPU.<br>
+* Other applications in the cluster were protected from resource issues.<br>
 
---Outcome<br>
+### Namespace Resource Quota
 
-After implementing resource limits and namespace quotas:<br>
+Since multiple teams were using the same Kubernetes cluster, we also applied resource quotas at the namespace level. Namespace quotas controlled how much CPU and memory each teams applications could use and also implemeneted resource limit on the podos.<br>
+This prevented one team from consuming too many cluster resources and affecting other teams.<br>
 
-We were able to identify the pod causing memory leakage.<br>
-Resource consumption became controlled.<br>
-The impact on other development teams was reduced.<br>
-The Kubernetes cluster became more stable and predictable.<br>
+## Outcome<br>
 
-## Other Kubernetes Issues Handled<br>
-## ImagePullBackOff<br>
-Issue:<br>
-Pods failed to start because Kubernetes could not pull the container image.<br>
+After implementing resource limits and quotas:<br>
 
---Troubleshooting:<br>
-Checked:<br>
+* We identified and controlled the application causing high memory usage.<br>
+* Cluster resource usage became more stable.<br>
+* Other teams applications were not impacted.<br>
+* The Kubernetes environment became more reliable and predictable.<br>
+* 
+# Other Kubernetes Issues Handled<br>
+
+## ImagePullBackOff Issue<br>
+
+### Problem<br>
+
+Some pods failed to start because Kubernetes was unable to download the required container image.<br>
+
+### Troubleshooting<br>
+
+I checked the pod details using:<br>
+
 kubectl describe pod <pod-name><br>
-Validated:<br>
-Image name and tag.<br>
-Container registry availability.<br>
-Image pull credentials.<br>
 
---Resolution:<br>
+I verified:<br>
 
-Corrected the image configuration and ensured Kubernetes had proper access to the container registry.<br>
+* The image name was correct.<br>
+* The image tag was correct.<br>
+* The container registry was available.<br>
+* Kubernetes had the correct credentials to access the image.<br>
 
-## CrashLoopBackOff<br>
-Issue:<br>
+### Solution<br>
 
-Application pods continuously restarted after deployment.<br>
---Troubleshooting:<br>
-Checked application logs:<br>
+I corrected the image configuration and updated the required registry access details.<br>
+After the changes, Kubernetes was able to pull the image successfully and start the application.<br>
+
+# CrashLoopBackOff Issue<br>
+
+## Problem<br>
+
+After deployment, some application pods continuously restarted and entered the CrashLoopBackOff state.<br>
+
+## Troubleshooting<br>
+
+I checked the application logs:<br>
 kubectl logs <pod-name><br>
-Reviewed pod events:<br>
-kubectl describe pod <pod-name><br>
 
-Checked:<br>
+I also checked pod events:
+kubectl describe pod <pod-name>
 
-Serive is configured correctly<br>
-Liveliness probes are correct configured<br>
-Checked enviornment variables<br>
+I verified:<br>
 
-Resolution:<br>
-Fixed application configuration issues and redeployed the workload.<br>
+* Application configuration.<br>
+* Environment variables.<br>
+* Kubernetes service configuration.<br>
+* Liveness and readiness probes.<br>
+* Valid CMD arguments<br>
 
-## Service and Networking Issues<br>
-Issue:
-Application pods were running, but the application was not accessible.<br>
+## Solution<br>
 
-Troubleshooting:<br>
-Checked:<br>
+I fixed the application configuration issues, updated the Kubernetes deployment files, and redeployed the application.After the changes, the pods started successfully and remained stable.<br>
+
+# Kubernetes Service and Networking Issue<br>
+
+## Problem<br>
+
+The application pods were running, but users were unable to access the application.
+
+## Troubleshooting<br>
+
+I checked:
 
 kubectl get svc<br>
 kubectl get endpoints<br>
-kubectl get pods<br>
+kubectl get pods<br
+                  
+I verified:
 
-Verified:<br>
+* Service configuration.<br>
+* Pod labels.<br>
+* Service selectors.<br>
+* Application ports.<br>
 
-Service selectors.<br>
-Pod labels.<br>
-Target ports.<br>
+## Solution<br>
 
-Resolution:<br>
-Corrected service configuration and restored application connectivity.<br>
+I corrected the service configuration and updated the required labels and selectors.<br>
 
-## GitOps Deployment Using Argo CD<br>
+After the changes, the service was able to connect with the application pods and the application became accessible.<br>
 
-I used Argo CD to manage Kubernetes deployments using the GitOps approach.The Kubernetes manifests were stored in GitHub, which acted as the single source of truth. ArgoCD continuously re-consiled the actual state and the desired state stored in github.<br>
+# GitOps Deployment Using Argo CD<br>
 
-## Helm Learning<br>
+I used Argo CD to manage Kubernetes deployments using the GitOps approach.In our setup, Kubernetes manifest files were stored in GitHub. GitHub acted as the single source of truth for all deployments.Argo CD continuously checked the Kubernetes cluster and compared the current running state with the desired state stored in GitHub.If there was any difference, Argo CD automatically synchronized the changes.<br>
 
-I am currently improving my Helm knowledge and learning advanced concepts such as:<br>
+Using Argo CD helped us achieve:<br>
 
-Helm charts<br>
-Templates<br>
-values.yaml configuration<br>
-Environment-specific deployments<br>
-Outcome
+* Consistent deployments.<br>
+* Better tracking of changes.<br>
+* Easier rollback.<br>
+* Reduced manual deployment work.<br>
+  
+# Helm Learning Experience
 
-## Through my Kubernetes experience, I gained practical knowledge in:<br>
+I am currently improving my Helm knowledge and learning more advanced concepts such as:<br>
 
-Deploying and managing workloads.<br>
-Troubleshooting real Kubernetes issues.<br>
-Managing resources in shared clusters.<br>
-Improving cluster stability using resource limits and quotas.<br>
-Implementing Gitops deployments using Argo CD.<br>
+* Helm charts.<br>
+* Templates.<br>
+* values.yaml configuration<br>
+* Environment-specific deployments.<br><br>
 
+I am learning how Helm helps create reusable Kubernetes deployment templates and makes application deployments easier across different environments.
+
+
+# Overall Kubernetes Experience
+
+Through my Kubernetes experience, I gained practical knowledge in:<br>
+
+* Deploying and managing applications on Kubernetes.<br>
+* Troubleshooting real Kubernetes issues.<br>
+* Managing resources in shared Kubernetes clusters.<br>
+* Improving cluster stability using resource limits and quotas.<br>
+* Implementing GitOps deployments using Argo CD.<br>
+  
+
+These experiences helped me understand how to maintain stable, reliable, and scalable Kubernetes environments.<br>
