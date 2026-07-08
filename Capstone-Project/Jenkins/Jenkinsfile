@@ -32,6 +32,7 @@ pipeline {
                 pwd
                 ls -la
                 ls -la Capstone-Project
+                ls -la .git
                 '''
             }
         }
@@ -56,14 +57,17 @@ pipeline {
 
 
         stage('SonarQube Scan') {
+
             steps {
-              withSonarQubeEnv('SonarQube') {
-               sh '''
-               sonar-scanner \
-               -Dsonar.projectKey=capstone-project \
-               -Dsonar.sources=Capstone-Project/app \
-               -Dsonar.python.version=3.14
-                '''
+
+                withSonarQubeEnv('SonarQube') {
+
+                    sh '''
+                    sonar-scanner \
+                    -Dsonar.projectKey=capstone-project \
+                    -Dsonar.sources=Capstone-Project/app \
+                    -Dsonar.python.version=3.14
+                    '''
 
                 }
 
@@ -80,7 +84,8 @@ pipeline {
                 dir('Capstone-Project/app') {
 
                     sh '''
-                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                    docker build \
+                    -t ${IMAGE_NAME}:${IMAGE_TAG} .
                     '''
 
                 }
@@ -140,6 +145,7 @@ pipeline {
 
                 echo "Updated deployment.yaml"
 
+
                 cat Capstone-Project/K8s/deployment.yaml
 
                 '''
@@ -147,6 +153,7 @@ pipeline {
             }
 
         }
+
 
 
 
@@ -166,18 +173,34 @@ pipeline {
 
                     sh '''
 
+                    echo "Current workspace:"
+                    pwd
+
+
+                    echo "Checking Git repository:"
+                    git rev-parse --show-toplevel
+
+
                     git config user.email "jenkins@localhost"
 
                     git config user.name "Jenkins"
 
 
+                    git status
+
+
                     git add Capstone-Project/K8s/deployment.yaml
 
 
-                    git commit -m "Update image tag ${IMAGE_TAG}" || true
+                    git commit \
+                    -m "Update Kubernetes image tag ${IMAGE_TAG}" \
+                    || echo "No changes to commit"
 
 
-                    git push https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/Tejashwini-Javejar/orn-ai-devops-assessment.git main
+                    git push \
+                    https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/Tejashwini-Javejar/orn-ai-devops-assessment.git \
+                    HEAD:main
+
 
                     '''
 
@@ -191,21 +214,32 @@ pipeline {
     }
 
 
+
     post {
 
+
         success {
+
             echo "✅ Pipeline completed successfully!"
+
         }
+
 
 
         failure {
+
             echo "❌ Pipeline failed! Check logs."
+
         }
+
 
 
         always {
+
             cleanWs()
+
         }
+
 
     }
 
