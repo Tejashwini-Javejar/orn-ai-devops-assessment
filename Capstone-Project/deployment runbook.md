@@ -297,3 +297,5 @@ Verified:
 
 The AWS Gitops Platform Capstone deployment was successfully completed. The environment was provisioned using Terraform, the application was containerized using Docker, CI/CD automation was implemented using Jenkins, application deployment was managed through Kubernetes and ArgoCD using GitOps principles, and monitoring was enabled using Prometheus and Grafana.
 
+Application can be accessed through this link-- 
+## a798b679764964c03b35e63b08be5301-827446125.us-east-1.elb.amazonaws.com
