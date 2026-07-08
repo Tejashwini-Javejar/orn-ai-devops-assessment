@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: flask-app
-        image: teju96/capstone-project:11
+        image: teju96/capstone-project:25
         ports:
         - containerPort: 5000
