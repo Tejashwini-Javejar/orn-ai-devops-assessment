@@ -20,21 +20,31 @@ pipeline {
 
 
         stage('Checkout') {
+
             steps {
+
                 checkout scm
+
             }
+
         }
 
 
+
         stage('Check Repository Structure') {
+
             steps {
+
                 sh '''
                 pwd
                 ls -la
                 ls -la Capstone-Project
                 '''
+
             }
+
         }
+
 
 
         stage('Install Dependencies') {
@@ -44,7 +54,9 @@ pipeline {
                 dir('Capstone-Project/app') {
 
                     sh '''
+
                     pip install -r requirements.txt
+
                     '''
 
                 }
@@ -62,10 +74,12 @@ pipeline {
                 withSonarQubeEnv('SonarQube') {
 
                     sh '''
+
                     sonar-scanner \
                     -Dsonar.projectKey=capstone-project \
                     -Dsonar.sources=Capstone-Project/app \
                     -Dsonar.python.version=3.14
+
                     '''
 
                 }
@@ -83,7 +97,10 @@ pipeline {
                 dir('Capstone-Project/app') {
 
                     sh '''
-                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+
+                    docker build \
+                    -t ${IMAGE_NAME}:${IMAGE_TAG} .
+
                     '''
 
                 }
@@ -99,12 +116,15 @@ pipeline {
 
             steps {
 
+
                 withCredentials([
+
                     usernamePassword(
                         credentialsId: 'docker-cred',
                         usernameVariable: 'DOCKER_USERNAME',
                         passwordVariable: 'DOCKER_PASSWORD'
                     )
+
                 ]) {
 
 
@@ -143,7 +163,9 @@ pipeline {
 
                 echo "Updated deployment.yaml"
 
+
                 cat Capstone-Project/K8s/deployment.yaml
+
 
                 '''
 
@@ -154,47 +176,43 @@ pipeline {
 
 
 
-
         stage('Commit and Push Kubernetes Manifest') {
 
             steps {
 
+
                 withCredentials([
+
                     usernamePassword(
                         credentialsId: 'Github-token',
                         usernameVariable: 'GITHUB_USERNAME',
                         passwordVariable: 'GITHUB_TOKEN'
                     )
+
                 ]) {
 
 
                     sh '''
 
-                    echo "Configuring Git safe directory"
-
+                    echo "Configuring Git"
                     git config --global --add safe.directory "$(pwd)"
-
-
-                    echo "Git repository check"
-
-                    git rev-parse --show-toplevel
-
-
                     git config user.email "jenkins@localhost"
-
                     git config user.name "Jenkins"
-
-
-
+                    echo "Current Git status"
+                    git status
+                    echo "Switching to main branch"
+                    git checkout -B main
+                    echo "Adding Kubernetes manifest"
                     git add Capstone-Project/K8s/deployment.yaml
+                    echo "Committing changes"
+                    git commit \
+                    -m "Update image tag ${IMAGE_TAG}" || true
+                    echo "Pushing changes to GitHub"
+                    git push \
+                    https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/Tejashwini-Javejar/orn-ai-devops-assessment.git \
+                    HEAD:main
 
 
-
-                    git commit -m "Update image tag ${IMAGE_TAG}" || true
-
-
-
-                    git push https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/Tejashwini-Javejar/orn-ai-devops-assessment.git main
 
                     '''
 
@@ -208,7 +226,9 @@ pipeline {
     }
 
 
+
     post {
+
 
         success {
 
