@@ -20,21 +20,16 @@ pipeline {
 
 
         stage('Checkout') {
-
             steps {
-
                 checkout scm
-
             }
-
         }
 
 
         stage('Install Dependencies') {
-
             steps {
 
-                dir('Capstone Project/app') {
+                dir('app') {
 
                     sh '''
                     pip install -r requirements.txt
@@ -43,7 +38,6 @@ pipeline {
                 }
 
             }
-
         }
 
 
@@ -56,7 +50,7 @@ pipeline {
                     sh '''
                     sonar-scanner \
                     -Dsonar.projectKey=capstone-project \
-                    -Dsonar.sources="Capstone Project/app" \
+                    -Dsonar.sources=app \
                     -Dsonar.python.version=3.14
                     '''
 
@@ -71,7 +65,7 @@ pipeline {
 
             steps {
 
-                dir('Capstone Project/app') {
+                dir('app') {
 
                     sh '''
                     docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
@@ -84,9 +78,11 @@ pipeline {
         }
 
 
+
         stage('Push Docker Image') {
 
             steps {
+
 
                 withCredentials([
                     usernamePassword(
@@ -98,6 +94,7 @@ pipeline {
 
 
                     sh '''
+
                     echo $DOCKER_PASSWORD | docker login \
                     -u $DOCKER_USERNAME \
                     --password-stdin
@@ -107,6 +104,7 @@ pipeline {
 
 
                     docker logout
+
                     '''
 
                 }
@@ -117,24 +115,25 @@ pipeline {
 
 
 
+
         stage('Update Kubernetes Deployment') {
 
             steps {
 
                 sh '''
 
-                sed -i "s|image:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" \
-                "Capstone Project/K8s/deployment.yaml"
+                sed -i "s|image:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" K8s/deployment.yaml
 
 
-                echo "Updated deployment.yaml:"
-                cat "Capstone Project/K8s/deployment.yaml"
+                echo "Updated Kubernetes deployment:"
+                cat K8s/deployment.yaml
 
                 '''
 
             }
 
         }
+
 
 
 
@@ -159,13 +158,14 @@ pipeline {
                     git config user.name "Jenkins"
 
 
-                    git add "Capstone Project/K8s/deployment.yaml"
+                    git add K8s/deployment.yaml
 
 
-                    git commit -m "Update image tag to ${IMAGE_TAG}" || true
+                    git commit -m "Update image tag ${IMAGE_TAG}" || true
 
 
                     git push https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/Tejashwini-Javejar/orn-ai-devops-assessment.git main
+
 
                     '''
 
@@ -177,6 +177,7 @@ pipeline {
 
 
     }
+
 
 
     post {
