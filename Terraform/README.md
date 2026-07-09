@@ -3,31 +3,51 @@
 
 ## Answer:
 
-Yes, In my previous projects, I used Terraform to provision the resourcses using Hashicorp language. The infrastructure included a VPC, public and private subnets, an Internet Gateway, NAT Gateway, route tables, security groups, EC2 instances and an Application Load Balancer (ALB). Using Terraform allowed us to automate the infrastructure deployment and easier to manage.
+Yes. In my previous project, we used Terraform to provision and manage AWS infrastructure. The infrastructure included a VPC, public and private subnets, an Internet Gateway, NAT Gateway, route tables, security groups, EC2 instances, an Application Load Balancer (ALB), and Auto Scaling Groups. We used Terraform, AWS, GitHub, and Jenkins to automate infrastructure deployments.
 
-In my previous project, I used a modular approach, where Terraform allows us to break down the infrastructure into small, self-contained components. We can create reusable templates instead of rewriting the same code every time. This makes the code easier to maintain, improves reusability and also reduces the time required to provision resources.
+My role was to write and maintain Terraform code, create reusable modules, configure the remote backend, review changes using terraform plan, and deploy the infrastructure through our Jenkins pipeline.
 
-I have worked with the fallowing Terraform commands<br>
+To keep the code clean and reusable, we followed a modular approach. Instead of writing everything in one file, we created separate modules for different resources like VPC, EC2, ALB, and Security Groups. Whenever we needed these resources in another project or environment, we simply reused the same modules instead of writing the code again.
 
-terraform init - It will initialize the terraform configuration and download the required providers<br>
-terraform plan - It is a kind of dry run , where it shows what infrastructure it is going to create<br>
-terraform apply- It is used to create the resources<br>
-terraform destroy - It will destroy the resources as per the requirement<br>
+Our project structure looked something like this:
 
-I have also worked with the Terraform state file, which is the heart of Terraform. The state file contains all the details of the infrastructure that Terraform has created and keeps track of the resources. It helps Terraform identify the difference between the actual state and the desired state of the infrastructure, so that only the required changes are applied.
+terraform/
+│
+├── modules/
+│   ├── vpc/
+│   ├── ec2/
+│   ├── alb/
+│   └── security-group/
+│
+├── environments/
+│   ├── dev/
+│   ├── qa/
+│   └── prod/
+│
+├── backend.tf
+├── variables.tf
+└── providers.tf
 
-Storing the state file is an important aspect of Terraform. In my project, we used an AWS S3 bucket as a remote backend to store the Terraform state file securely. This provides a centralized location for the state file and prevents unauthorized modifications.I also used DynamoDB state locking, which ensures that only one user or process can modify the infrastructure state at a time, preventing concurrent updates and state file corruption.
+For the Terraform state file, we used an AWS S3 bucket as the remote backend so that the whole team could use the same state file. We also used DynamoDB for state locking, DynamoDB enables state locking whenever the remote backend is configured, it ensures only user or process can modify the changes at once.
 
-I also worked with Terraform variables, which allow us to avoid hardcoding values such as the AWS region, VPC CIDR block, instance type and other configuration values. We can create input and output variables this makes the code reusable and allows the same Terraform configuration to be used across different environments.
+We used variables instead of hardcoding values. For example, the AWS region, VPC CIDR, instance type, and ami ID were stored in variables.tf. Each environment, like Dev, QA, and Production, had its own terraform.tfvars file with different values. This allowed us to use the same Terraform code for all environments.
 
-Additionally, I worked with Terraform workspaces to maintain separate state files for different environments such as development, testing and production. This helps manage multiple environments while using the same Terraform configuration.
+Along with this I worked on terraform workspaces where it mainatins seperate state file foe each enviornment so there wont be any conflicts between the enviornments.
 
-I have also worked with Terraform provisioners to execute commands or scripts on remote machines by establishing SSH connections after the infrastructure is provisioned, whenever additional configuration was required.
+The Terraform commands I used regularly :
 
-## Issues Handled
-State drift: Some times, resources were modified manually through the AWS Console. Running terraform plan showed the differences between the actual infrastructure and the Terraform configuration. We either imported the existing resources into the state or updated the Terraform code to match the desired state.
+terraform init– Initializes the Terraform project.
+terraform plan – Kind of dry run, Shows what changes Terraform will make.
+terraform apply – Creates or updates the infrastructure.
+terraform destroy – Deletes the infrastructure when required.
 
-Backend issues: We stored the Terraform state in an S3 backend with DynamoDB state locking. If backend access failed, I checked IAM permissions, the S3 bucket configuration, and the DynamoDB table before retrying.
 
-## Outcome: 
-Terraform enabled us to automate infrastructure provisioning,reduce manual effort, and manage AWS resources using Infrastructure as Code.
+## Issues handled
+
+One issue I worked on was state drift. Sometimes someone changed a resource manually in the AWS Console. When I ran terraform plan, Terraform showed the differences. I checked the changes and either imported the resource into the Terraform state or updated the Terraform code so that everything matched again.
+
+I also faced a backend issue where Terraform couldn't access the state file in S3. I checked the IAM permissions, verified the S3 bucket and DynamoDB table, and then reinitialized Terraform. After that, the deployment worked successfully.
+
+## Outcome
+
+Using Terraform helped us automate infrastructure creation, reduce manual work, and keep the infrastructure consistent across Development, QA, and Production environments. Reusable modules also made the code easier to maintain and saved time during new deployments.
