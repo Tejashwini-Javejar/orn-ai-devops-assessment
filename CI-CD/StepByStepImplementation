@@ -1,7 +1,7 @@
-## CI/CD Pipeline Explanation (Step by Step)
+CI/CD Pipeline Explanation (Step by Step)
 I implemented a CI/CD pipeline for a Spring Boot application. Let me explain how I built and executed it step by step.
 
-## 1. First, I set up the GitHub repository
+1. First, I set up the GitHub repository
 
 I used a Spring Boot application source code from GitHub to implement and test my CI/CD pipeline.
 The repository contains:
@@ -11,7 +11,7 @@ The repository contains:
 - enkinsfile for CI/CD pipeline
 I configured Jenkins to pull the application code from the GitHub repository and automate the build and deployment process.
 
-## 2. Jenkins automatically fetches the code
+2. Jenkins automatically fetches the code
 
 When I trigger the pipeline, Jenkins first clones the Git repository:
 
@@ -19,7 +19,7 @@ It pulls the latest code from the main branch
 It loads the Jenkinsfile from the repository
 Then it starts executing the pipeline stages one by one
 
-## 3. Maven build stage
+3. Maven build stage
 
 In the next step, I build the Spring Boot application using Maven.
 Initially, I had an issue because Jenkins was running Maven in the wrong directory, so it couldn’t find the pom.xml.
@@ -33,7 +33,7 @@ Downloads dependencies
 Compiles the code
 Creates the JAR file inside the target folder
 
-## 4.SonarQube Static Code Analysis
+4.SonarQube Static Code Analysis
 
 After the Maven build is successful, Jenkins runs SonarQube analysis.
 I integrated SonarQube to:
@@ -42,7 +42,7 @@ Identify bugs and vulnerabilities
 Detect maintainability issues
 Jenkins uses the SonarQube quality gate result to verify whether the code meets the required standards before continuing the pipeline.
 
-## 5. Docker image build stage
+5. Docker image build stage
 
 After the build is successful, I create a Docker image using the Dockerfile.
 
@@ -57,19 +57,19 @@ Then Jenkins runs:
 docker build -t cicd-pipeline:v1 .
 This creates a Docker image containing my Spring Boot application.
 
-## 6. Running the Docker container
+6. Running the Docker container
 
 After building the image, I run the container using Jenkins:
 docker run -d --name app -p 8081:8080 cicd-pipeline:v1
 Initially, I faced a problem because port 8080 was already in use by another Java process.
 So I fixed it by mapping the container to port 8081.\
 
-## 7. Push Docker Image to Container Registry
+7. Push Docker Image to Container Registry
 
 After creating the Docker image, Jenkins pushes the image to a container registry.
 The Kubernetes cluster uses this image to deploy the application.
 
-## 8. Kubernetes Deployment
+8. Kubernetes Deployment
 
 For application deployment, I used Kubernetes and minikube cluster.
 The application was deployed using Kubernetes manifests such as:
@@ -79,7 +79,7 @@ The application was deployed using Kubernetes manifests such as:
 The Kubernetes Deployment manages the application pods and ensures the required number of replicas are running.
 The Service exposes the application inside/outside the Kubernetes cluster.
 
-## 8. GitOps Deployment Using Argo CD
+8. GitOps Deployment Using Argo CD
 
 I used Argo CD to implement the GitOps deployment approach.
 The Kubernetes manifests were stored in a Git repository, which acted as the single source of truth.
@@ -94,7 +94,7 @@ The deployment flow works like this:
 
 Argo CD continuously compares the desired state in Git with the actual state in Kubernetes. If any differences are detected, it automatically deploy the changes onto the cluster.
 
-## Additional Issues I Faced
+Additional Issues I Faced
 
 During implementation, I handled issues such as:
 
