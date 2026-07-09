@@ -26,7 +26,7 @@ Initially, I had an issue because Jenkins was running Maven in the wrong directo
 Then I fixed it by pointing Jenkins to the correct folder:
 CI-CD/spring-boot-app/src-main
 After fixing that, I ran:
-mvn clean package -DskipTests
+mvn clean package 
 
 This step:
 Downloads dependencies
