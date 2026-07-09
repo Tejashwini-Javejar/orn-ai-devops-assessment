@@ -98,9 +98,9 @@ Additional Issues I Faced
 
 During implementation, I handled issues such as:
 
-* Docker permission issue → Added Jenkins user to the Docker group.
-* Maven could not find `pom.xml` → Corrected the Jenkins working directory.
-* Port conflict → Changed application port mapping from 8080 to 8081.
-* Kubernetes deployment issues → Verified pod status using `kubectl`, checked logs, and corrected deployment configurations.
-* Argo CD OutOfSync issue → Investigated differences between Git manifests and the Kubernetes cluster state and allowed Argo CD to reconcile the changes.
+* Docker permission issue - Added Jenkins user to the Docker group.
+* Maven could not find pom.xml - Corrected the Jenkins working directory.
+* Port conflict - Changed application port mapping from 8080 to 8081.
+* Kubernetes deployment issues - Verified pod status using `kubectl`, checked logs, and corrected deployment configurations.
+* Argo CD OutOfSync issue - Investigated differences between Git manifests and the Kubernetes cluster state and allowed Argo CD to reconcile the changes.
 
